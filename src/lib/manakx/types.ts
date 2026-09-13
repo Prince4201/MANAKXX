@@ -156,7 +156,13 @@ export interface User {
   name: string;
   role: Role;
   email: string;
-  approved: boolean;
+  status: "PENDING" | "ACTIVE" | "SUSPENDED" | "REJECTED";
+  organization?: string;
+  department?: string;
+  employee_id?: string;
+  company_name?: string;
+  industry?: string;
+  phone?: string;
 }
 
 export interface Weights {

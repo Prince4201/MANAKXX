@@ -229,16 +229,37 @@ function ResultsView({ analysis }: { analysis: Analysis }) {
               <GitCompare className="mr-1.5 h-4 w-4" /> Compare ({compare.length})
             </Link>
           </Button>
-          <Button asChild variant="outline">
-            <Link to="/review">
-              <ShieldCheck className="mr-1.5 h-4 w-4" /> Human Review
-            </Link>
-          </Button>
-          <Button asChild>
-            <Link to="/analysis/$id/report" params={{ id: analysis.id }}>
-              <FileText className="mr-1.5 h-4 w-4" /> Generate Analysis Report
-            </Link>
-          </Button>
+          {(user?.role === "Government Procurement Officer" || user?.role === "Admin") && (
+            <>
+              {analysis.status === "Draft" || analysis.status === "Completed" ? (
+                <Button onClick={() => {
+                  actions.updateAnalysis(analysis.id, { status: "Needs Review" });
+                  toast.success("Sent for Review", { description: "Procurement forwarded to Technical Reviewers." });
+                }}>
+                  <ShieldCheck className="mr-1.5 h-4 w-4" /> Send for Technical Review
+                </Button>
+              ) : (
+                <Button asChild variant="outline">
+                  <Link to="/review">
+                    <ShieldCheck className="mr-1.5 h-4 w-4" /> View Review Status
+                  </Link>
+                </Button>
+              )}
+              <Button asChild>
+                <Link to="/analysis/$id/report" params={{ id: analysis.id }}>
+                  <FileText className="mr-1.5 h-4 w-4" /> Report
+                </Link>
+              </Button>
+            </>
+          )}
+          {(user?.role === "Technical Reviewer" || user?.role === "Admin") && analysis.status === "Needs Review" && (
+            <Button onClick={() => {
+              actions.updateAnalysis(analysis.id, { status: "Approved" });
+              toast.success("Procurement Approved", { description: "All recommendations have been verified." });
+            }} className="bg-green-600 hover:bg-green-700">
+              <CheckCircle2 className="mr-1.5 h-4 w-4" /> Complete Final Review
+            </Button>
+          )}
         </>
       }
     >
@@ -389,9 +410,29 @@ function ResultsView({ analysis }: { analysis: Analysis }) {
                       >
                         {inCompare ? "In comparison" : "Compare"}
                       </Button>
-                      <Button size="sm" onClick={() => addToReview(std.id, rec.relevance)}>
-                        Add to Review
-                      </Button>
+                      
+                      {(user?.role === "Technical Reviewer" || user?.role === "Admin") ? (
+                        <>
+                          <Button size="sm" variant="outline" className="border-green-200 bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800 dark:border-green-900/50 dark:bg-green-900/20 dark:text-green-400" onClick={() => {
+                            addToReview(std.id, rec.relevance);
+                            // Auto-approve logic here in a real app
+                            toast.success("Approved recommendation");
+                          }}>
+                            Approve
+                          </Button>
+                          <Button size="sm" variant="outline" className="border-red-200 bg-red-50 text-red-700 hover:bg-red-100 hover:text-red-800 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-400" onClick={() => {
+                            addToReview(std.id, rec.relevance);
+                            // Auto-reject logic here in a real app
+                            toast.error("Rejected recommendation");
+                          }}>
+                            Reject
+                          </Button>
+                        </>
+                      ) : (
+                        <Button size="sm" onClick={() => addToReview(std.id, rec.relevance)}>
+                          Request Review
+                        </Button>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -405,9 +446,11 @@ function ResultsView({ analysis }: { analysis: Analysis }) {
           <Card>
             <CardHeader className="flex-row items-center justify-between pb-2">
               <CardTitle className="text-base">Extracted Requirements</CardTitle>
-              <Button size="sm" onClick={() => setAdding(true)}>
-                <Plus className="mr-1.5 h-4 w-4" /> Add Requirement
-              </Button>
+              {(user?.role === "Government Procurement Officer" || user?.role === "Admin") && (
+                <Button size="sm" onClick={() => setAdding(true)}>
+                  <Plus className="mr-1.5 h-4 w-4" /> Add Requirement
+                </Button>
+              )}
             </CardHeader>
             <CardContent className="px-0">
               <div className="overflow-x-auto">
@@ -436,12 +479,16 @@ function ResultsView({ analysis }: { analysis: Analysis }) {
                         </TableCell>
                         <TableCell className="text-right font-mono text-sm">{r.confidence}%</TableCell>
                         <TableCell className="text-right">
-                          <Button variant="ghost" size="sm" onClick={() => setEditing(r)}>
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" onClick={() => setDeleting(r)}>
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
+                          {(user?.role === "Government Procurement Officer" || user?.role === "Admin") && (
+                            <>
+                              <Button variant="ghost" size="sm" onClick={() => setEditing(r)}>
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="sm" onClick={() => setDeleting(r)}>
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))}

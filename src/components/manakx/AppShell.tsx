@@ -1,20 +1,32 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   BarChart3,
+  Bell,
+  BookOpen,
+  Briefcase,
+  ClipboardCheck,
   Database,
   FileSearch,
   FileText,
+  FolderOpen,
   GitCompare,
   History,
   LayoutDashboard,
+  ListChecks,
   LogOut,
   Moon,
+  Package,
   PlusCircle,
   Search,
   Settings,
   ShieldCheck,
   Sun,
+  Upload,
+  User,
   UserCog,
+  Users,
+  Zap,
+  type LucideIcon,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
@@ -31,38 +43,230 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { actions, hydrate, useStore } from "@/lib/manakx/store";
 import { cn } from "@/lib/utils";
 import { DisclaimerBar } from "./bits";
+import type { Role } from "@/lib/manakx/types";
 
-const NAV = [
-  { section: "Workspace", items: [
-    { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { to: "/analysis/new", label: "New Analysis", icon: PlusCircle },
-    { to: "/history", label: "Analysis History", icon: History },
-    { to: "/compare", label: "Compare Standards", icon: GitCompare },
-  ]},
-  { section: "Knowledge", items: [
-    { to: "/standards", label: "Standards Search", icon: Search },
-    { to: "/review", label: "Human Review", icon: ShieldCheck },
-    { to: "/reports", label: "Reports", icon: FileText },
-  ]},
-  { section: "Administration", items: [
-    { to: "/admin", label: "Admin Dashboard", icon: UserCog },
-    { to: "/admin/standards", label: "Standards Database", icon: Database },
-    { to: "/admin/analytics", label: "Analytics", icon: BarChart3 },
-    { to: "/settings", label: "Profile & Settings", icon: Settings },
-  ]},
-] as const;
+/* ------------------------------------------------------------------ */
+/*  Role-specific navigation definitions                               */
+/* ------------------------------------------------------------------ */
+
+interface NavItem {
+  to: string;
+  label: string;
+  icon: LucideIcon;
+}
+
+interface NavSection {
+  section: string;
+  items: NavItem[];
+}
+
+const OFFICER_NAV: NavSection[] = [
+  {
+    section: "Workspace",
+    items: [
+      { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+      { to: "/officer/procurements", label: "My Procurements", icon: FolderOpen },
+      { to: "/analysis/new", label: "New Procurement", icon: PlusCircle },
+    ],
+  },
+  {
+    section: "Analysis",
+    items: [
+      { to: "/history", label: "Analysis History", icon: History },
+      { to: "/standards", label: "Standards Search", icon: Search },
+      { to: "/compare", label: "Compare Standards", icon: GitCompare },
+    ],
+  },
+  {
+    section: "Review & Reports",
+    items: [
+      { to: "/review", label: "Review Status", icon: ShieldCheck },
+      { to: "/reports", label: "Reports", icon: FileText },
+      { to: "/officer/inspection", label: "Product Inspection", icon: ClipboardCheck },
+    ],
+  },
+  {
+    section: "Account",
+    items: [
+      { to: "/settings", label: "Profile & Settings", icon: Settings },
+    ],
+  },
+];
+
+const REVIEWER_NAV: NavSection[] = [
+  {
+    section: "Review",
+    items: [
+      { to: "/reviewer", label: "Dashboard", icon: LayoutDashboard },
+      { to: "/reviewer/queue", label: "Review Queue", icon: ListChecks },
+      { to: "/reviewer/history", label: "Review History", icon: History },
+    ],
+  },
+  {
+    section: "Reference",
+    items: [
+      { to: "/standards", label: "Standards Search", icon: Search },
+      { to: "/reports", label: "Reports", icon: FileText },
+    ],
+  },
+  {
+    section: "Account",
+    items: [
+      { to: "/reviewer/profile", label: "Profile", icon: User },
+    ],
+  },
+];
+
+const VENDOR_NAV: NavSection[] = [
+  {
+    section: "Workspace",
+    items: [
+      { to: "/vendor", label: "Dashboard", icon: LayoutDashboard },
+      { to: "/vendor/procurements", label: "Available Procurements", icon: Briefcase },
+      { to: "/vendor/products", label: "My Products", icon: Package },
+    ],
+  },
+  {
+    section: "Assessment",
+    items: [
+      { to: "/vendor/assessments", label: "Self-Assessments", icon: ClipboardCheck },
+      { to: "/vendor/documents", label: "Documents", icon: Upload },
+      { to: "/vendor/history", label: "Assessment History", icon: History },
+    ],
+  },
+  {
+    section: "Account",
+    items: [
+      { to: "/vendor/profile", label: "Profile", icon: User },
+    ],
+  },
+];
+
+const ADMIN_NAV: NavSection[] = [
+  {
+    section: "Administration",
+    items: [
+      { to: "/admin", label: "Dashboard", icon: LayoutDashboard },
+      { to: "/admin/users", label: "User Management", icon: Users },
+    ],
+  },
+  {
+    section: "System",
+    items: [
+      { to: "/admin/standards", label: "Standards Database", icon: Database },
+      { to: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+      { to: "/admin/audit", label: "Audit Logs", icon: BookOpen },
+      { to: "/settings", label: "AI Configuration", icon: Settings },
+    ],
+  },
+  {
+    section: "Account",
+    items: [
+      { to: "/admin/profile", label: "Profile", icon: User },
+    ],
+  },
+];
+
+function getNavForRole(role?: Role): NavSection[] {
+  switch (role) {
+    case "Government Procurement Officer":
+      return OFFICER_NAV;
+    case "Technical Reviewer":
+      return REVIEWER_NAV;
+    case "Vendor/Supplier":
+      return VENDOR_NAV;
+    case "Admin":
+      return ADMIN_NAV;
+    default:
+      return OFFICER_NAV;
+  }
+}
+
+function getRoleLabel(role?: Role): string {
+  switch (role) {
+    case "Government Procurement Officer":
+      return "Procurement Officer";
+    case "Technical Reviewer":
+      return "Technical Reviewer";
+    case "Vendor/Supplier":
+      return "Vendor / Supplier";
+    case "Admin":
+      return "Administrator";
+    default:
+      return "User";
+  }
+}
+
+function getRoleBadgeColor(role?: Role): string {
+  switch (role) {
+    case "Government Procurement Officer":
+      return "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20";
+    case "Technical Reviewer":
+      return "bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20";
+    case "Vendor/Supplier":
+      return "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20";
+    case "Admin":
+      return "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20";
+    default:
+      return "bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/20";
+  }
+}
+
+function getHomeRoute(role?: Role): string {
+  switch (role) {
+    case "Government Procurement Officer":
+      return "/dashboard";
+    case "Technical Reviewer":
+      return "/reviewer";
+    case "Vendor/Supplier":
+      return "/vendor";
+    case "Admin":
+      return "/admin";
+    default:
+      return "/dashboard";
+  }
+}
+
+interface QuickAction {
+  to: string;
+  label: string;
+  icon: LucideIcon;
+}
+
+function getQuickAction(role?: Role): QuickAction | null {
+  switch (role) {
+    case "Government Procurement Officer":
+      return { to: "/analysis/new", label: "New Procurement", icon: PlusCircle };
+    case "Technical Reviewer":
+      return { to: "/reviewer/queue", label: "Review Queue", icon: ListChecks };
+    case "Vendor/Supplier":
+      return { to: "/vendor/procurements", label: "Start Assessment", icon: ClipboardCheck };
+    case "Admin":
+      return { to: "/admin/users", label: "Manage Users", icon: Users };
+    default:
+      return null;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Components                                                         */
+/* ------------------------------------------------------------------ */
 
 export function Logo({ compact }: { compact?: boolean }) {
   return (
-    <div className="flex items-center gap-2">
-      <span className="relative grid h-8 w-8 place-items-center overflow-hidden rounded-md bg-accent font-display text-[11px] font-bold text-accent-foreground shadow-sm">
-        <span className="absolute inset-x-0 top-0 h-0.5 bg-success" />
-        M<span className="opacity-70">X</span>
-      </span>
+    <div className="flex items-center gap-3">
+      <div className="relative grid h-9 w-9 place-items-center overflow-hidden rounded-xl bg-gradient-to-br from-indigo-600 via-blue-600 to-cyan-500 text-white font-display text-xs font-black shadow-md shadow-indigo-500/20 ring-1 ring-white/20">
+        <span className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-emerald-400 to-teal-200" />
+        <span className="tracking-tighter">MX</span>
+        <span className="absolute -bottom-1 -right-1 h-3 w-3 rounded-full bg-emerald-400 ring-2 ring-background" />
+      </div>
       {!compact && (
         <div className="leading-tight">
-          <p className="font-display text-base font-semibold">MANAKX</p>
-          <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">Standards Intelligence</p>
+          <div className="flex items-center gap-1.5">
+            <p className="font-display text-lg font-bold tracking-tight text-foreground">MANAK<span className="bg-gradient-to-r from-indigo-500 to-cyan-500 bg-clip-text text-transparent">X</span></p>
+            <span className="rounded-md bg-indigo-500/10 px-1.5 py-0.5 text-[9px] font-bold text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 uppercase tracking-widest">SIH '26</span>
+          </div>
+          <p className="text-[10px] font-medium tracking-wide text-muted-foreground/80">AI Standards & Compliance Intelligence</p>
         </div>
       )}
     </div>
@@ -72,37 +276,27 @@ export function Logo({ compact }: { compact?: boolean }) {
 function NavList({ onNavigate }: { onNavigate?: (() => void) | undefined }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { user } = useStore();
+  const nav = getNavForRole(user?.role);
+
   return (
     <ScrollArea className="h-full">
       <nav className="space-y-5 p-3">
-        {NAV.map((group) => {
-          if (group.section === "Administration" && user?.role !== "Administrator") {
-            return (
-              <div key={group.section} className="space-y-1">
-                <p className="px-2 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/50">
-                  Account
-                </p>
-                <NavItem to="/settings" label="Profile & Settings" icon={Settings} pathname={pathname} onNavigate={onNavigate} />
-              </div>
-            );
-          }
-          return (
-            <div key={group.section} className="space-y-1">
-              <p className="px-2 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/50">
-                {group.section}
-              </p>
-              {group.items.map((item) => (
-                <NavItem key={item.to} {...item} pathname={pathname} onNavigate={onNavigate} />
-              ))}
-            </div>
-          );
-        })}
+        {nav.map((group) => (
+          <div key={group.section} className="space-y-1">
+            <p className="px-2 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/50">
+              {group.section}
+            </p>
+            {group.items.map((item) => (
+              <NavItemComponent key={item.to} {...item} pathname={pathname} onNavigate={onNavigate} />
+            ))}
+          </div>
+        ))}
       </nav>
     </ScrollArea>
   );
 }
 
-function NavItem({
+function NavItemComponent({
   to,
   label,
   icon: Icon,
@@ -111,11 +305,11 @@ function NavItem({
 }: {
   to: string;
   label: string;
-  icon: typeof LayoutDashboard;
+  icon: LucideIcon;
   pathname: string;
   onNavigate?: (() => void) | undefined;
 }) {
-  const active = pathname === to || (to !== "/dashboard" && pathname.startsWith(`${to}/`));
+  const active = pathname === to || (to !== "/dashboard" && to !== "/reviewer" && to !== "/vendor" && to !== "/admin" && pathname.startsWith(`${to}/`));
   return (
     <Link
       to={to}
@@ -136,6 +330,7 @@ function NavItem({
 export interface Crumb {
   label: string;
   to?: string;
+  path?: string;
 }
 
 export function AppShell({
@@ -154,6 +349,8 @@ export function AppShell({
   const { user, theme } = useStore();
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
+  const homeRoute = getHomeRoute(user?.role);
+  const quickAction = getQuickAction(user?.role);
 
   useEffect(() => {
     hydrate();
@@ -173,10 +370,21 @@ export function AppShell({
     <div className="flex min-h-screen bg-background">
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground shadow-2xl lg:flex">
         <div className="flex h-16 items-center border-b border-sidebar-border px-5 text-sidebar-foreground">
-          <Link to="/dashboard">
+          <Link to={homeRoute}>
             <Logo />
           </Link>
         </div>
+
+        {/* Role badge */}
+        {user && (
+          <div className="border-b border-sidebar-border px-4 py-3">
+            <p className="text-xs font-medium text-sidebar-foreground/70">{user.name}</p>
+            <span className={cn("mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold", getRoleBadgeColor(user.role))}>
+              {getRoleLabel(user.role)}
+            </span>
+          </div>
+        )}
+
         <div className="min-h-0 flex-1">
           <NavList />
         </div>
@@ -200,20 +408,28 @@ export function AppShell({
               <div className="flex h-14 items-center border-b border-sidebar-border px-4">
                 <Logo />
               </div>
+              {user && (
+                <div className="border-b border-sidebar-border px-4 py-3">
+                  <p className="text-xs font-medium">{user.name}</p>
+                  <span className={cn("mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold", getRoleBadgeColor(user.role))}>
+                    {getRoleLabel(user.role)}
+                  </span>
+                </div>
+              )}
               <NavList />
             </SheetContent>
           </Sheet>
 
           <div className="min-w-0 flex-1">
             <nav className="flex items-center gap-1 truncate text-xs text-muted-foreground">
-              <Link to="/dashboard" className="hover:text-foreground">
+              <Link to={homeRoute} className="hover:text-foreground">
                 MANAKX
               </Link>
               {crumbs.map((c) => (
                 <span key={c.label} className="flex items-center gap-1">
                   <span>/</span>
-                  {c.to ? (
-                    <Link to={c.to} className="hover:text-foreground">
+                  {c.to || c.path ? (
+                    <Link to={(c.to || c.path)!} className="hover:text-foreground">
                       {c.label}
                     </Link>
                   ) : (
@@ -227,11 +443,16 @@ export function AppShell({
           <Button variant="ghost" size="icon" onClick={() => actions.toggleTheme()} aria-label="Toggle theme">
             {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
-          <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex">
-            <Link to="/analysis/new">
-              <PlusCircle className="mr-1.5 h-4 w-4" /> New Analysis
-            </Link>
-          </Button>
+
+          {quickAction && (
+            <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex">
+              <Link to={quickAction.to}>
+                <quickAction.icon className="mr-1.5 h-4 w-4" />
+                {quickAction.label}
+              </Link>
+            </Button>
+          )}
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="gap-2">
@@ -240,12 +461,19 @@ export function AppShell({
                 </span>
                 <span className="hidden text-left text-xs leading-tight md:block">
                   <span className="block font-medium">{user?.name ?? "Demo User"}</span>
-                  <span className="block text-muted-foreground">{user?.role ?? "Procurement Officer"}</span>
+                  <span className="block text-muted-foreground">{getRoleLabel(user?.role)}</span>
                 </span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52">
-              <DropdownMenuLabel>{user?.email ?? "demo@manakx.in"}</DropdownMenuLabel>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>
+                <div className="flex flex-col gap-1">
+                  <span>{user?.email ?? "demo@manakx.in"}</span>
+                  <span className={cn("inline-flex w-fit rounded-full px-2 py-0.5 text-[10px] font-semibold", getRoleBadgeColor(user?.role))}>
+                    {getRoleLabel(user?.role)}
+                  </span>
+                </div>
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <Link to="/settings">
@@ -259,7 +487,9 @@ export function AppShell({
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                onClick={() => {
+                onClick={async () => {
+                  const { signOut } = await import("@/lib/auth");
+                  await signOut();
                   actions.logout();
                   navigate({ to: "/login" });
                 }}
@@ -285,4 +515,3 @@ export function AppShell({
     </div>
   );
 }
-

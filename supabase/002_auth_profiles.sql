@@ -5,7 +5,7 @@
 DROP TABLE IF EXISTS public.users CASCADE;
 
 -- Create profiles table linked to auth.users
-CREATE TABLE public.profiles (
+CREATE TABLE IF NOT EXISTS public.profiles (
   id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   email text UNIQUE NOT NULL,
   name text NOT NULL,
@@ -49,11 +49,13 @@ CREATE TRIGGER on_auth_user_created
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
 -- Everyone can read their own profile
+DROP POLICY IF EXISTS "Users can read own profile" ON public.profiles;
 CREATE POLICY "Users can read own profile"
   ON public.profiles FOR SELECT
   USING (auth.uid() = id);
 
 -- Admins can read all profiles
+DROP POLICY IF EXISTS "Admin can read all profiles" ON public.profiles;
 CREATE POLICY "Admin can read all profiles"
   ON public.profiles FOR SELECT
   USING (
@@ -61,11 +63,13 @@ CREATE POLICY "Admin can read all profiles"
   );
 
 -- Users can update their own profile (name only, not role)
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 CREATE POLICY "Users can update own profile"
   ON public.profiles FOR UPDATE
   USING (auth.uid() = id);
 
 -- Admins can update any profile (for approvals etc)
+DROP POLICY IF EXISTS "Admin can update all profiles" ON public.profiles;
 CREATE POLICY "Admin can update all profiles"
   ON public.profiles FOR UPDATE
   USING (
@@ -73,6 +77,7 @@ CREATE POLICY "Admin can update all profiles"
   );
 
 -- Allow the trigger function to insert (it runs as SECURITY DEFINER)
+DROP POLICY IF EXISTS "Service role can insert profiles" ON public.profiles;
 CREATE POLICY "Service role can insert profiles"
   ON public.profiles FOR INSERT
   WITH CHECK (true);

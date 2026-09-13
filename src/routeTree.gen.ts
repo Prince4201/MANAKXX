@@ -10,26 +10,61 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AccountPendingRouteImport } from './routes/account-pending'
+import { Route as AccountRejectedRouteImport } from './routes/account-rejected'
+import { Route as AccountSuspendedRouteImport } from './routes/account-suspended'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as ReviewRouteImport } from './routes/review'
+import { Route as ReviewerRouteImport } from './routes/reviewer'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as VendorRouteImport } from './routes/vendor'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
+import { Route as AdminAuditRouteImport } from './routes/admin.audit'
+import { Route as AdminProfileRouteImport } from './routes/admin.profile'
 import { Route as AdminStandardsRouteImport } from './routes/admin.standards'
+import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AnalysisIdRouteImport } from './routes/analysis.$id'
 import { Route as AnalysisNewRouteImport } from './routes/analysis.new'
+import { Route as OfficerInspectionRouteImport } from './routes/officer.inspection'
+import { Route as OfficerProcurementsRouteImport } from './routes/officer.procurements'
+import { Route as OfficerProfileRouteImport } from './routes/officer.profile'
+import { Route as ReviewerHistoryRouteImport } from './routes/reviewer.history'
+import { Route as ReviewerProfileRouteImport } from './routes/reviewer.profile'
+import { Route as ReviewerQueueRouteImport } from './routes/reviewer.queue'
 import { Route as StandardsIndexRouteImport } from './routes/standards.index'
 import { Route as StandardsIdRouteImport } from './routes/standards.$id'
+import { Route as VendorAssessmentsRouteImport } from './routes/vendor.assessments'
+import { Route as VendorDocumentsRouteImport } from './routes/vendor.documents'
+import { Route as VendorHistoryRouteImport } from './routes/vendor.history'
+import { Route as VendorProcurementsRouteImport } from './routes/vendor.procurements'
+import { Route as VendorProductsRouteImport } from './routes/vendor.products'
+import { Route as VendorProfileRouteImport } from './routes/vendor.profile'
 import { Route as AnalysisIdReportRouteImport } from './routes/analysis.$id.report'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountPendingRoute = AccountPendingRouteImport.update({
+  id: '/account-pending',
+  path: '/account-pending',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountRejectedRoute = AccountRejectedRouteImport.update({
+  id: '/account-rejected',
+  path: '/account-rejected',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountSuspendedRoute = AccountSuspendedRouteImport.update({
+  id: '/account-suspended',
+  path: '/account-suspended',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CompareRoute = CompareRouteImport.update({
@@ -62,6 +97,11 @@ const ReviewRoute = ReviewRouteImport.update({
   path: '/review',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReviewerRoute = ReviewerRouteImport.update({
+  id: '/reviewer',
+  path: '/reviewer',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -70,6 +110,11 @@ const SettingsRoute = SettingsRouteImport.update({
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VendorRoute = VendorRouteImport.update({
+  id: '/vendor',
+  path: '/vendor',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -82,9 +127,24 @@ const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
   path: '/admin/analytics',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminAuditRoute = AdminAuditRouteImport.update({
+  id: '/admin/audit',
+  path: '/admin/audit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminProfileRoute = AdminProfileRouteImport.update({
+  id: '/admin/profile',
+  path: '/admin/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminStandardsRoute = AdminStandardsRouteImport.update({
   id: '/admin/standards',
   path: '/admin/standards',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/admin/users',
+  path: '/admin/users',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AnalysisIdRoute = AnalysisIdRouteImport.update({
@@ -97,6 +157,36 @@ const AnalysisNewRoute = AnalysisNewRouteImport.update({
   path: '/analysis/new',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OfficerInspectionRoute = OfficerInspectionRouteImport.update({
+  id: '/officer/inspection',
+  path: '/officer/inspection',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OfficerProcurementsRoute = OfficerProcurementsRouteImport.update({
+  id: '/officer/procurements',
+  path: '/officer/procurements',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OfficerProfileRoute = OfficerProfileRouteImport.update({
+  id: '/officer/profile',
+  path: '/officer/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReviewerHistoryRoute = ReviewerHistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => ReviewerRoute,
+} as any)
+const ReviewerProfileRoute = ReviewerProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => ReviewerRoute,
+} as any)
+const ReviewerQueueRoute = ReviewerQueueRouteImport.update({
+  id: '/queue',
+  path: '/queue',
+  getParentRoute: () => ReviewerRoute,
+} as any)
 const StandardsIndexRoute = StandardsIndexRouteImport.update({
   id: '/standards/',
   path: '/standards/',
@@ -107,6 +197,36 @@ const StandardsIdRoute = StandardsIdRouteImport.update({
   path: '/standards/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VendorAssessmentsRoute = VendorAssessmentsRouteImport.update({
+  id: '/assessments',
+  path: '/assessments',
+  getParentRoute: () => VendorRoute,
+} as any)
+const VendorDocumentsRoute = VendorDocumentsRouteImport.update({
+  id: '/documents',
+  path: '/documents',
+  getParentRoute: () => VendorRoute,
+} as any)
+const VendorHistoryRoute = VendorHistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => VendorRoute,
+} as any)
+const VendorProcurementsRoute = VendorProcurementsRouteImport.update({
+  id: '/procurements',
+  path: '/procurements',
+  getParentRoute: () => VendorRoute,
+} as any)
+const VendorProductsRoute = VendorProductsRouteImport.update({
+  id: '/products',
+  path: '/products',
+  getParentRoute: () => VendorRoute,
+} as any)
+const VendorProfileRoute = VendorProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => VendorRoute,
+} as any)
 const AnalysisIdReportRoute = AnalysisIdReportRouteImport.update({
   id: '/report',
   path: '/report',
@@ -115,38 +235,78 @@ const AnalysisIdReportRoute = AnalysisIdReportRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account-pending': typeof AccountPendingRoute
+  '/account-rejected': typeof AccountRejectedRoute
+  '/account-suspended': typeof AccountSuspendedRoute
   '/compare': typeof CompareRoute
   '/dashboard': typeof DashboardRoute
   '/history': typeof HistoryRoute
   '/login': typeof LoginRoute
   '/reports': typeof ReportsRoute
   '/review': typeof ReviewRoute
+  '/reviewer': typeof ReviewerRouteWithChildren
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
+  '/vendor': typeof VendorRouteWithChildren
   '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/audit': typeof AdminAuditRoute
+  '/admin/profile': typeof AdminProfileRoute
   '/admin/standards': typeof AdminStandardsRoute
+  '/admin/users': typeof AdminUsersRoute
   '/analysis/$id': typeof AnalysisIdRouteWithChildren
   '/analysis/new': typeof AnalysisNewRoute
+  '/officer/inspection': typeof OfficerInspectionRoute
+  '/officer/procurements': typeof OfficerProcurementsRoute
+  '/officer/profile': typeof OfficerProfileRoute
+  '/reviewer/history': typeof ReviewerHistoryRoute
+  '/reviewer/profile': typeof ReviewerProfileRoute
+  '/reviewer/queue': typeof ReviewerQueueRoute
   '/standards/$id': typeof StandardsIdRoute
+  '/vendor/assessments': typeof VendorAssessmentsRoute
+  '/vendor/documents': typeof VendorDocumentsRoute
+  '/vendor/history': typeof VendorHistoryRoute
+  '/vendor/procurements': typeof VendorProcurementsRoute
+  '/vendor/products': typeof VendorProductsRoute
+  '/vendor/profile': typeof VendorProfileRoute
   '/admin/': typeof AdminIndexRoute
   '/standards/': typeof StandardsIndexRoute
   '/analysis/$id/report': typeof AnalysisIdReportRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/account-pending': typeof AccountPendingRoute
+  '/account-rejected': typeof AccountRejectedRoute
+  '/account-suspended': typeof AccountSuspendedRoute
   '/compare': typeof CompareRoute
   '/dashboard': typeof DashboardRoute
   '/history': typeof HistoryRoute
   '/login': typeof LoginRoute
   '/reports': typeof ReportsRoute
   '/review': typeof ReviewRoute
+  '/reviewer': typeof ReviewerRouteWithChildren
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
+  '/vendor': typeof VendorRouteWithChildren
   '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/audit': typeof AdminAuditRoute
+  '/admin/profile': typeof AdminProfileRoute
   '/admin/standards': typeof AdminStandardsRoute
+  '/admin/users': typeof AdminUsersRoute
   '/analysis/$id': typeof AnalysisIdRouteWithChildren
   '/analysis/new': typeof AnalysisNewRoute
+  '/officer/inspection': typeof OfficerInspectionRoute
+  '/officer/procurements': typeof OfficerProcurementsRoute
+  '/officer/profile': typeof OfficerProfileRoute
+  '/reviewer/history': typeof ReviewerHistoryRoute
+  '/reviewer/profile': typeof ReviewerProfileRoute
+  '/reviewer/queue': typeof ReviewerQueueRoute
   '/standards/$id': typeof StandardsIdRoute
+  '/vendor/assessments': typeof VendorAssessmentsRoute
+  '/vendor/documents': typeof VendorDocumentsRoute
+  '/vendor/history': typeof VendorHistoryRoute
+  '/vendor/procurements': typeof VendorProcurementsRoute
+  '/vendor/products': typeof VendorProductsRoute
+  '/vendor/profile': typeof VendorProfileRoute
   '/admin': typeof AdminIndexRoute
   '/standards': typeof StandardsIndexRoute
   '/analysis/$id/report': typeof AnalysisIdReportRoute
@@ -154,19 +314,39 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/account-pending': typeof AccountPendingRoute
+  '/account-rejected': typeof AccountRejectedRoute
+  '/account-suspended': typeof AccountSuspendedRoute
   '/compare': typeof CompareRoute
   '/dashboard': typeof DashboardRoute
   '/history': typeof HistoryRoute
   '/login': typeof LoginRoute
   '/reports': typeof ReportsRoute
   '/review': typeof ReviewRoute
+  '/reviewer': typeof ReviewerRouteWithChildren
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
+  '/vendor': typeof VendorRouteWithChildren
   '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/audit': typeof AdminAuditRoute
+  '/admin/profile': typeof AdminProfileRoute
   '/admin/standards': typeof AdminStandardsRoute
+  '/admin/users': typeof AdminUsersRoute
   '/analysis/$id': typeof AnalysisIdRouteWithChildren
   '/analysis/new': typeof AnalysisNewRoute
+  '/officer/inspection': typeof OfficerInspectionRoute
+  '/officer/procurements': typeof OfficerProcurementsRoute
+  '/officer/profile': typeof OfficerProfileRoute
+  '/reviewer/history': typeof ReviewerHistoryRoute
+  '/reviewer/profile': typeof ReviewerProfileRoute
+  '/reviewer/queue': typeof ReviewerQueueRoute
   '/standards/$id': typeof StandardsIdRoute
+  '/vendor/assessments': typeof VendorAssessmentsRoute
+  '/vendor/documents': typeof VendorDocumentsRoute
+  '/vendor/history': typeof VendorHistoryRoute
+  '/vendor/procurements': typeof VendorProcurementsRoute
+  '/vendor/products': typeof VendorProductsRoute
+  '/vendor/profile': typeof VendorProfileRoute
   '/admin/': typeof AdminIndexRoute
   '/standards/': typeof StandardsIndexRoute
   '/analysis/$id/report': typeof AnalysisIdReportRoute
@@ -175,57 +355,117 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/account-pending'
+    | '/account-rejected'
+    | '/account-suspended'
     | '/compare'
     | '/dashboard'
     | '/history'
     | '/login'
     | '/reports'
     | '/review'
+    | '/reviewer'
     | '/settings'
     | '/signup'
+    | '/vendor'
     | '/admin/analytics'
+    | '/admin/audit'
+    | '/admin/profile'
     | '/admin/standards'
+    | '/admin/users'
     | '/analysis/$id'
     | '/analysis/new'
+    | '/officer/inspection'
+    | '/officer/procurements'
+    | '/officer/profile'
+    | '/reviewer/history'
+    | '/reviewer/profile'
+    | '/reviewer/queue'
     | '/standards/$id'
+    | '/vendor/assessments'
+    | '/vendor/documents'
+    | '/vendor/history'
+    | '/vendor/procurements'
+    | '/vendor/products'
+    | '/vendor/profile'
     | '/admin/'
     | '/standards/'
     | '/analysis/$id/report'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/account-pending'
+    | '/account-rejected'
+    | '/account-suspended'
     | '/compare'
     | '/dashboard'
     | '/history'
     | '/login'
     | '/reports'
     | '/review'
+    | '/reviewer'
     | '/settings'
     | '/signup'
+    | '/vendor'
     | '/admin/analytics'
+    | '/admin/audit'
+    | '/admin/profile'
     | '/admin/standards'
+    | '/admin/users'
     | '/analysis/$id'
     | '/analysis/new'
+    | '/officer/inspection'
+    | '/officer/procurements'
+    | '/officer/profile'
+    | '/reviewer/history'
+    | '/reviewer/profile'
+    | '/reviewer/queue'
     | '/standards/$id'
+    | '/vendor/assessments'
+    | '/vendor/documents'
+    | '/vendor/history'
+    | '/vendor/procurements'
+    | '/vendor/products'
+    | '/vendor/profile'
     | '/admin'
     | '/standards'
     | '/analysis/$id/report'
   id:
     | '__root__'
     | '/'
+    | '/account-pending'
+    | '/account-rejected'
+    | '/account-suspended'
     | '/compare'
     | '/dashboard'
     | '/history'
     | '/login'
     | '/reports'
     | '/review'
+    | '/reviewer'
     | '/settings'
     | '/signup'
+    | '/vendor'
     | '/admin/analytics'
+    | '/admin/audit'
+    | '/admin/profile'
     | '/admin/standards'
+    | '/admin/users'
     | '/analysis/$id'
     | '/analysis/new'
+    | '/officer/inspection'
+    | '/officer/procurements'
+    | '/officer/profile'
+    | '/reviewer/history'
+    | '/reviewer/profile'
+    | '/reviewer/queue'
     | '/standards/$id'
+    | '/vendor/assessments'
+    | '/vendor/documents'
+    | '/vendor/history'
+    | '/vendor/procurements'
+    | '/vendor/products'
+    | '/vendor/profile'
     | '/admin/'
     | '/standards/'
     | '/analysis/$id/report'
@@ -233,18 +473,29 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountPendingRoute: typeof AccountPendingRoute
+  AccountRejectedRoute: typeof AccountRejectedRoute
+  AccountSuspendedRoute: typeof AccountSuspendedRoute
   CompareRoute: typeof CompareRoute
   DashboardRoute: typeof DashboardRoute
   HistoryRoute: typeof HistoryRoute
   LoginRoute: typeof LoginRoute
   ReportsRoute: typeof ReportsRoute
   ReviewRoute: typeof ReviewRoute
+  ReviewerRoute: typeof ReviewerRouteWithChildren
   SettingsRoute: typeof SettingsRoute
   SignupRoute: typeof SignupRoute
+  VendorRoute: typeof VendorRouteWithChildren
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
+  AdminAuditRoute: typeof AdminAuditRoute
+  AdminProfileRoute: typeof AdminProfileRoute
   AdminStandardsRoute: typeof AdminStandardsRoute
+  AdminUsersRoute: typeof AdminUsersRoute
   AnalysisIdRoute: typeof AnalysisIdRouteWithChildren
   AnalysisNewRoute: typeof AnalysisNewRoute
+  OfficerInspectionRoute: typeof OfficerInspectionRoute
+  OfficerProcurementsRoute: typeof OfficerProcurementsRoute
+  OfficerProfileRoute: typeof OfficerProfileRoute
   StandardsIdRoute: typeof StandardsIdRoute
   AdminIndexRoute: typeof AdminIndexRoute
   StandardsIndexRoute: typeof StandardsIndexRoute
@@ -257,6 +508,27 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account-pending': {
+      id: '/account-pending'
+      path: '/account-pending'
+      fullPath: '/account-pending'
+      preLoaderRoute: typeof AccountPendingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account-rejected': {
+      id: '/account-rejected'
+      path: '/account-rejected'
+      fullPath: '/account-rejected'
+      preLoaderRoute: typeof AccountRejectedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account-suspended': {
+      id: '/account-suspended'
+      path: '/account-suspended'
+      fullPath: '/account-suspended'
+      preLoaderRoute: typeof AccountSuspendedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/compare': {
@@ -301,6 +573,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReviewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reviewer': {
+      id: '/reviewer'
+      path: '/reviewer'
+      fullPath: '/reviewer'
+      preLoaderRoute: typeof ReviewerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/settings': {
       id: '/settings'
       path: '/settings'
@@ -313,6 +592,13 @@ declare module '@tanstack/react-router' {
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/vendor': {
+      id: '/vendor'
+      path: '/vendor'
+      fullPath: '/vendor'
+      preLoaderRoute: typeof VendorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -329,11 +615,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAnalyticsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/audit': {
+      id: '/admin/audit'
+      path: '/admin/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AdminAuditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/profile': {
+      id: '/admin/profile'
+      path: '/admin/profile'
+      fullPath: '/admin/profile'
+      preLoaderRoute: typeof AdminProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/standards': {
       id: '/admin/standards'
       path: '/admin/standards'
       fullPath: '/admin/standards'
       preLoaderRoute: typeof AdminStandardsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/admin/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/analysis/$id': {
@@ -350,6 +657,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AnalysisNewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/officer/inspection': {
+      id: '/officer/inspection'
+      path: '/officer/inspection'
+      fullPath: '/officer/inspection'
+      preLoaderRoute: typeof OfficerInspectionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/officer/procurements': {
+      id: '/officer/procurements'
+      path: '/officer/procurements'
+      fullPath: '/officer/procurements'
+      preLoaderRoute: typeof OfficerProcurementsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/officer/profile': {
+      id: '/officer/profile'
+      path: '/officer/profile'
+      fullPath: '/officer/profile'
+      preLoaderRoute: typeof OfficerProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reviewer/history': {
+      id: '/reviewer/history'
+      path: '/history'
+      fullPath: '/reviewer/history'
+      preLoaderRoute: typeof ReviewerHistoryRouteImport
+      parentRoute: typeof ReviewerRoute
+    }
+    '/reviewer/profile': {
+      id: '/reviewer/profile'
+      path: '/profile'
+      fullPath: '/reviewer/profile'
+      preLoaderRoute: typeof ReviewerProfileRouteImport
+      parentRoute: typeof ReviewerRoute
+    }
+    '/reviewer/queue': {
+      id: '/reviewer/queue'
+      path: '/queue'
+      fullPath: '/reviewer/queue'
+      preLoaderRoute: typeof ReviewerQueueRouteImport
+      parentRoute: typeof ReviewerRoute
+    }
     '/standards/': {
       id: '/standards/'
       path: '/standards'
@@ -364,6 +713,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StandardsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/vendor/assessments': {
+      id: '/vendor/assessments'
+      path: '/assessments'
+      fullPath: '/vendor/assessments'
+      preLoaderRoute: typeof VendorAssessmentsRouteImport
+      parentRoute: typeof VendorRoute
+    }
+    '/vendor/documents': {
+      id: '/vendor/documents'
+      path: '/documents'
+      fullPath: '/vendor/documents'
+      preLoaderRoute: typeof VendorDocumentsRouteImport
+      parentRoute: typeof VendorRoute
+    }
+    '/vendor/history': {
+      id: '/vendor/history'
+      path: '/history'
+      fullPath: '/vendor/history'
+      preLoaderRoute: typeof VendorHistoryRouteImport
+      parentRoute: typeof VendorRoute
+    }
+    '/vendor/procurements': {
+      id: '/vendor/procurements'
+      path: '/procurements'
+      fullPath: '/vendor/procurements'
+      preLoaderRoute: typeof VendorProcurementsRouteImport
+      parentRoute: typeof VendorRoute
+    }
+    '/vendor/products': {
+      id: '/vendor/products'
+      path: '/products'
+      fullPath: '/vendor/products'
+      preLoaderRoute: typeof VendorProductsRouteImport
+      parentRoute: typeof VendorRoute
+    }
+    '/vendor/profile': {
+      id: '/vendor/profile'
+      path: '/profile'
+      fullPath: '/vendor/profile'
+      preLoaderRoute: typeof VendorProfileRouteImport
+      parentRoute: typeof VendorRoute
+    }
     '/analysis/$id/report': {
       id: '/analysis/$id/report'
       path: '/report'
@@ -373,6 +764,43 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface ReviewerRouteChildren {
+  ReviewerHistoryRoute: typeof ReviewerHistoryRoute
+  ReviewerProfileRoute: typeof ReviewerProfileRoute
+  ReviewerQueueRoute: typeof ReviewerQueueRoute
+}
+
+const ReviewerRouteChildren: ReviewerRouteChildren = {
+  ReviewerHistoryRoute: ReviewerHistoryRoute,
+  ReviewerProfileRoute: ReviewerProfileRoute,
+  ReviewerQueueRoute: ReviewerQueueRoute,
+}
+
+const ReviewerRouteWithChildren = ReviewerRoute._addFileChildren(
+  ReviewerRouteChildren,
+)
+
+interface VendorRouteChildren {
+  VendorAssessmentsRoute: typeof VendorAssessmentsRoute
+  VendorDocumentsRoute: typeof VendorDocumentsRoute
+  VendorHistoryRoute: typeof VendorHistoryRoute
+  VendorProcurementsRoute: typeof VendorProcurementsRoute
+  VendorProductsRoute: typeof VendorProductsRoute
+  VendorProfileRoute: typeof VendorProfileRoute
+}
+
+const VendorRouteChildren: VendorRouteChildren = {
+  VendorAssessmentsRoute: VendorAssessmentsRoute,
+  VendorDocumentsRoute: VendorDocumentsRoute,
+  VendorHistoryRoute: VendorHistoryRoute,
+  VendorProcurementsRoute: VendorProcurementsRoute,
+  VendorProductsRoute: VendorProductsRoute,
+  VendorProfileRoute: VendorProfileRoute,
+}
+
+const VendorRouteWithChildren =
+  VendorRoute._addFileChildren(VendorRouteChildren)
 
 interface AnalysisIdRouteChildren {
   AnalysisIdReportRoute: typeof AnalysisIdReportRoute
@@ -388,18 +816,29 @@ const AnalysisIdRouteWithChildren = AnalysisIdRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountPendingRoute: AccountPendingRoute,
+  AccountRejectedRoute: AccountRejectedRoute,
+  AccountSuspendedRoute: AccountSuspendedRoute,
   CompareRoute: CompareRoute,
   DashboardRoute: DashboardRoute,
   HistoryRoute: HistoryRoute,
   LoginRoute: LoginRoute,
   ReportsRoute: ReportsRoute,
   ReviewRoute: ReviewRoute,
+  ReviewerRoute: ReviewerRouteWithChildren,
   SettingsRoute: SettingsRoute,
   SignupRoute: SignupRoute,
+  VendorRoute: VendorRouteWithChildren,
   AdminAnalyticsRoute: AdminAnalyticsRoute,
+  AdminAuditRoute: AdminAuditRoute,
+  AdminProfileRoute: AdminProfileRoute,
   AdminStandardsRoute: AdminStandardsRoute,
+  AdminUsersRoute: AdminUsersRoute,
   AnalysisIdRoute: AnalysisIdRouteWithChildren,
   AnalysisNewRoute: AnalysisNewRoute,
+  OfficerInspectionRoute: OfficerInspectionRoute,
+  OfficerProcurementsRoute: OfficerProcurementsRoute,
+  OfficerProfileRoute: OfficerProfileRoute,
   StandardsIdRoute: StandardsIdRoute,
   AdminIndexRoute: AdminIndexRoute,
   StandardsIndexRoute: StandardsIndexRoute,

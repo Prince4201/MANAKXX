@@ -10,6 +10,7 @@ export async function signUp(
   password: string,
   name: string,
   role: Role,
+  metadata?: Record<string, string>,
 ) {
   if (!supabase) throw new Error("Supabase not configured");
 
@@ -17,7 +18,7 @@ export async function signUp(
     email,
     password,
     options: {
-      data: { name, role },
+      data: { name, role, ...metadata },
     },
   });
 
@@ -69,7 +70,13 @@ export async function getProfile(userId: string): Promise<User | null> {
     name: data.name,
     email: data.email,
     role: data.role as Role,
-    approved: data.approved,
+    status: data.status,
+    organization: data.organization,
+    department: data.department,
+    employee_id: data.employee_id,
+    company_name: data.company_name,
+    industry: data.industry,
+    phone: data.phone,
   };
 }
 

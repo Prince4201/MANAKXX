@@ -11,7 +11,6 @@ import { useEffect, type ReactNode } from "react";
 
 import { Toaster } from "@/components/ui/sonner";
 import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
 
 function NotFoundComponent() {
   return (
@@ -38,9 +37,6 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
-  useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
-  }, [error]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -126,13 +122,94 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+import { useAuth } from "@/lib/auth";
+import { useLocation, useNavigate } from "@tanstack/react-router";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const { user, loading } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (loading) return;
+
+    const path = location.pathname;
+    const isAuthRoute = path === "/login" || path === "/signup" || path === "/";
+    
+    // Not authenticated, trying to access a protected route
+    if (!user && !isAuthRoute) {
+      navigate({ to: "/login", replace: true });
+      return;
+    }
+
+    // Authenticated, trying to access login/signup
+    if (user && (path === "/login" || path === "/signup")) {
+      if (user.role === "Admin") navigate({ to: "/admin", replace: true });
+      else if (user.role === "Technical Reviewer") navigate({ to: "/reviewer", replace: true });
+      else if (user.role === "Vendor/Supplier") navigate({ to: "/vendor", replace: true });
+      else navigate({ to: "/dashboard", replace: true });
+      return;
+    }
+
+    // Strict Role-based access control
+    if (user) {
+      if (user.status !== "ACTIVE") {
+        const allowedPaths = ["/account-pending", "/account-rejected", "/account-suspended"];
+        if (!allowedPaths.includes(path) && path !== "/login" && path !== "/signup" && path !== "/") {
+          if (user.status === "PENDING_APPROVAL" || user.status === "PENDING_REVIEW") {
+            navigate({ to: "/account-pending", replace: true });
+          } else if (user.status === "REJECTED") {
+            navigate({ to: "/account-rejected", replace: true });
+          } else if (user.status === "SUSPENDED") {
+            navigate({ to: "/account-suspended", replace: true });
+          }
+          return;
+        }
+      }
+
+      const deny = (msg: string) => {
+        const home = user.role === "Admin" ? "/admin"
+          : user.role === "Technical Reviewer" ? "/reviewer"
+          : user.role === "Vendor/Supplier" ? "/vendor"
+          : "/dashboard";
+        navigate({ to: home, replace: true });
+        toast.error("Access Denied", { description: msg });
+      };
+
+      // Admin routes
+      if (path.startsWith("/admin") && user.role !== "Admin") {
+        deny("You do not have Administrator privileges.");
+      }
+      // Reviewer routes
+      else if (path.startsWith("/reviewer") && !["Technical Reviewer", "Admin"].includes(user.role)) {
+        deny("You are not a Technical Reviewer.");
+      }
+      // Vendor routes
+      else if (path.startsWith("/vendor") && user.role !== "Vendor/Supplier") {
+        deny("You are not a Vendor/Supplier.");
+      }
+      // Officer routes (dashboard, analysis, officer/*)
+      else if (
+        (path.startsWith("/dashboard") || path.startsWith("/analysis") || path.startsWith("/officer")) &&
+        !["Government Procurement Officer", "Admin"].includes(user.role)
+      ) {
+        deny("You do not have Procurement Officer privileges.");
+      }
+    }
+  }, [user, loading, location.pathname, navigate]);
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      {loading ? (
+        <div className="flex min-h-screen items-center justify-center bg-background">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : (
+        <Outlet />
+      )}
       <Toaster position="top-right" richColors />
     </QueryClientProvider>
   );

@@ -4,7 +4,7 @@
 create extension if not exists "uuid-ossp";
 
 -- Users (Optional: can link to auth.users later)
-create table public.users (
+create table if not exists public.users (
   id uuid primary key default uuid_generate_v4(),
   email text unique not null,
   name text not null,
@@ -13,7 +13,7 @@ create table public.users (
 );
 
 -- Standards
-create table public.standards (
+create table if not exists public.standards (
   id text primary key,
   title text not null,
   category text not null,
@@ -31,7 +31,7 @@ create table public.standards (
 );
 
 -- Analyses
-create table public.analyses (
+create table if not exists public.analyses (
   id text primary key,
   tender_title text not null,
   reference text not null,
@@ -46,7 +46,7 @@ create table public.analyses (
 );
 
 -- Requirements
-create table public.requirements (
+create table if not exists public.requirements (
   id text primary key,
   analysis_id text not null references public.analyses(id) on delete cascade,
   text text not null,
@@ -57,7 +57,7 @@ create table public.requirements (
 );
 
 -- Recommendations
-create table public.recommendations (
+create table if not exists public.recommendations (
   id uuid primary key default uuid_generate_v4(),
   analysis_id text not null references public.analyses(id) on delete cascade,
   standard_id text not null references public.standards(id),
@@ -70,7 +70,7 @@ create table public.recommendations (
 );
 
 -- Requirement Matches
-create table public.requirement_matches (
+create table if not exists public.requirement_matches (
   id uuid primary key default uuid_generate_v4(),
   recommendation_id uuid not null references public.recommendations(id) on delete cascade,
   requirement_id text not null references public.requirements(id) on delete cascade,
@@ -81,7 +81,7 @@ create table public.requirement_matches (
 );
 
 -- Gaps
-create table public.gaps (
+create table if not exists public.gaps (
   id text primary key,
   analysis_id text not null references public.analyses(id) on delete cascade,
   area text not null,
@@ -91,7 +91,7 @@ create table public.gaps (
 );
 
 -- Conflicts
-create table public.conflicts (
+create table if not exists public.conflicts (
   id text primary key,
   analysis_id text not null references public.analyses(id) on delete cascade,
   title text not null,
@@ -101,7 +101,7 @@ create table public.conflicts (
 );
 
 -- Reviews
-create table public.reviews (
+create table if not exists public.reviews (
   id text primary key,
   analysis_id text not null references public.analyses(id) on delete cascade,
   standard_id text not null references public.standards(id),
@@ -113,7 +113,7 @@ create table public.reviews (
 );
 
 -- Feedback
-create table public.feedback (
+create table if not exists public.feedback (
   id text primary key,
   analysis_id text not null references public.analyses(id) on delete cascade,
   standard_id text not null references public.standards(id),
@@ -135,13 +135,32 @@ alter table public.reviews enable row level security;
 alter table public.feedback enable row level security;
 
 -- Create policies to allow all operations (for demo/development)
+drop policy if exists "Allow all on users" on public.users;
 create policy "Allow all on users" on public.users for all using (true) with check (true);
+
+drop policy if exists "Allow all on standards" on public.standards;
 create policy "Allow all on standards" on public.standards for all using (true) with check (true);
+
+drop policy if exists "Allow all on analyses" on public.analyses;
 create policy "Allow all on analyses" on public.analyses for all using (true) with check (true);
+
+drop policy if exists "Allow all on requirements" on public.requirements;
 create policy "Allow all on requirements" on public.requirements for all using (true) with check (true);
+
+drop policy if exists "Allow all on recommendations" on public.recommendations;
 create policy "Allow all on recommendations" on public.recommendations for all using (true) with check (true);
+
+drop policy if exists "Allow all on requirement_matches" on public.requirement_matches;
 create policy "Allow all on requirement_matches" on public.requirement_matches for all using (true) with check (true);
+
+drop policy if exists "Allow all on gaps" on public.gaps;
 create policy "Allow all on gaps" on public.gaps for all using (true) with check (true);
+
+drop policy if exists "Allow all on conflicts" on public.conflicts;
 create policy "Allow all on conflicts" on public.conflicts for all using (true) with check (true);
+
+drop policy if exists "Allow all on reviews" on public.reviews;
 create policy "Allow all on reviews" on public.reviews for all using (true) with check (true);
+
+drop policy if exists "Allow all on feedback" on public.feedback;
 create policy "Allow all on feedback" on public.feedback for all using (true) with check (true);

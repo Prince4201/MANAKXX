@@ -194,6 +194,43 @@ export function hydrate() {
 
   // Connect to Supabase: seed if empty, pull if it has data
   seedAndPullFromSupabase();
+
+  // Keep user in sync with real auth session
+  import("../../lib/supabase").then(({ supabase }) => {
+    if (!supabase) return;
+    
+    // Initial fetch
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        import("../../lib/auth").then(({ getProfile }) => {
+          getProfile(session.user.id).then((profile) => {
+            if (profile) {
+              state = { ...state, user: profile };
+              emit();
+            }
+          });
+        });
+      } else {
+        state = { ...state, user: null };
+        emit();
+      }
+    });
+
+    // Listen to changes
+    supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session?.user) {
+        const { getProfile } = await import("../../lib/auth");
+        const profile = await getProfile(session.user.id);
+        if (profile) {
+          state = { ...state, user: profile };
+          emit();
+        }
+      } else {
+        state = { ...state, user: null };
+        emit();
+      }
+    });
+  });
 }
 
 export function applyTheme(theme: "light" | "dark") {

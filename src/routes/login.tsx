@@ -1,27 +1,19 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowRight, Eye, EyeOff, Loader2, LogIn } from "lucide-react";
+import { Eye, EyeOff, Loader2, LogIn } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/manakx/AppShell";
 import { DisclaimerBar } from "@/components/manakx/bits";
 import { actions, hydrate } from "@/lib/manakx/store";
 import { signIn, getProfile } from "@/lib/auth";
-import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
-    meta: [
-      { title: "Sign in — MANAKX Standards Intelligence" },
-      { name: "description", content: "Sign in to the MANAKX procurement standards recommendation platform." },
-      { property: "og:title", content: "Sign in — MANAKX" },
-      { property: "og:description", content: "Sign in for procurement officers, reviewers, vendors and administrators." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
+    meta: [{ title: "Sign in — MANAKX" }],
   }),
   component: LoginPage,
 });
@@ -47,45 +39,57 @@ function LoginPage() {
     setLoading(true);
     try {
       const { session } = await signIn(email.trim(), password);
+      if (!session?.user) throw new Error("No session returned.");
 
-      if (!session?.user) {
-        toast.error("Login failed", { description: "No session returned." });
-        return;
-      }
-
-      // Fetch the user profile from profiles table
       const profile = await getProfile(session.user.id);
-
       if (!profile) {
         toast.error("Profile not found", { description: "Your profile could not be loaded. Contact an admin." });
         return;
       }
 
-      if (!profile.approved) {
-        toast.warning("Account pending approval", {
-          description: "Your account is awaiting admin approval. Please try again later.",
-        });
+      if (profile.status === "PENDING_APPROVAL" || profile.status === "PENDING_REVIEW") {
+        navigate({ to: "/account-pending" });
+        return;
+      }
+      if (profile.status === "REJECTED") {
+        navigate({ to: "/account-rejected" });
+        return;
+      }
+      if (profile.status === "SUSPENDED") {
+        navigate({ to: "/account-suspended" });
+        return;
+      }
+      if (profile.status !== "ACTIVE") {
+        toast.error("Account inactive", { description: "Your account is not active." });
         return;
       }
 
-      // Set user in local store
       actions.login(profile);
       toast.success(`Welcome back, ${profile.name}`, {
         description: `Signed in as ${profile.role}`,
       });
-      navigate({ to: "/dashboard" });
+
+      // Role-based routing
+      if (profile.role === "Admin") navigate({ to: "/admin" });
+      else if (profile.role === "Technical Reviewer") navigate({ to: "/reviewer" });
+      else if (profile.role === "Vendor/Supplier") navigate({ to: "/vendor" });
+      else navigate({ to: "/dashboard" });
+
     } catch (err: any) {
       const message = err?.message || "Login failed";
       if (message.includes("Invalid login credentials")) {
         toast.error("Invalid credentials", { description: "Check your email and password." });
-      } else if (message.includes("Email not confirmed")) {
-        toast.error("Email not verified", { description: "Please check your inbox and verify your email first." });
       } else {
         toast.error("Login error", { description: message });
       }
     } finally {
       setLoading(false);
     }
+  };
+
+  const useDemo = (demoEmail: string) => {
+    setEmail(demoEmail);
+    setPassword("Admin@123");
   };
 
   return (
@@ -106,12 +110,12 @@ function LoginPage() {
           </p>
         </div>
         <p className="relative text-xs text-sidebar-foreground/60">
-          MANAKX — AI Standards Recommendation for Procurement
+          Prototype / Synthetic Data — Not an Official BIS Database
         </p>
       </div>
 
       {/* Right panel — login form */}
-      <div className="flex items-center justify-center px-4 py-12">
+      <div className="flex flex-col items-center justify-center px-4 py-8">
         <div className="w-full max-w-md">
           <div className="lg:hidden">
             <Logo />
@@ -127,11 +131,9 @@ function LoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="mt-1"
-                autoComplete="email"
                 disabled={loading}
               />
             </div>
@@ -141,10 +143,8 @@ function LoginPage() {
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="current-password"
                   disabled={loading}
                 />
                 <button
@@ -180,9 +180,30 @@ function LoginPage() {
             </Link>
           </div>
 
-          <Card className="mt-6 border-dashed">
-            <CardContent className="p-4">
-              <DisclaimerBar />
+          <Card className="mt-8 border-dashed bg-muted/30">
+            <CardHeader className="pb-3 pt-4">
+              <CardTitle className="text-sm">Demo Accounts</CardTitle>
+              <CardDescription className="text-xs">
+                For hackathon demonstration purposes. Click to autofill. (Pwd: Admin@123)
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-2 pb-4 text-xs">
+              <button onClick={() => useDemo("admin@manakx.demo")} className="flex items-center justify-between rounded bg-background px-3 py-2 text-left shadow-sm hover:bg-accent">
+                <span className="font-medium">Administrator</span>
+                <span className="text-muted-foreground">admin@manakx.demo</span>
+              </button>
+              <button onClick={() => useDemo("reviewer@manakx.demo")} className="flex items-center justify-between rounded bg-background px-3 py-2 text-left shadow-sm hover:bg-accent">
+                <span className="font-medium">Technical Reviewer</span>
+                <span className="text-muted-foreground">reviewer@manakx.demo</span>
+              </button>
+              <button onClick={() => useDemo("officer@manakx.demo")} className="flex items-center justify-between rounded bg-background px-3 py-2 text-left shadow-sm hover:bg-accent">
+                <span className="font-medium">Procurement Officer</span>
+                <span className="text-muted-foreground">officer@manakx.demo</span>
+              </button>
+              <button onClick={() => useDemo("vendor@manakx.demo")} className="flex items-center justify-between rounded bg-background px-3 py-2 text-left shadow-sm hover:bg-accent">
+                <span className="font-medium">Vendor / Supplier</span>
+                <span className="text-muted-foreground">vendor@manakx.demo</span>
+              </button>
             </CardContent>
           </Card>
         </div>
