@@ -2,7 +2,7 @@
 @source "../src";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
@@ -95,7 +95,7 @@
   --sidebar-ring: oklch(0.72 0.155 62);
 }
 
-.dark {
+:root.dark {
   --background: oklch(0.17 0.025 258);
   --foreground: oklch(0.95 0.008 250);
   --card: oklch(0.215 0.03 258);
@@ -224,6 +224,7 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     letter-spacing: 0;
+    touch-action: pan-x pan-y;
   }
 
   h1,
