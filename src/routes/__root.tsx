@@ -11,6 +11,7 @@ import { useEffect, type ReactNode } from "react";
 
 import { Toaster } from "@/components/ui/sonner";
 import appCss from "../styles.css?url";
+import { useStore } from "@/lib/manakx/store";
 
 function NotFoundComponent() {
   return (
@@ -109,8 +110,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
+  const { theme } = useStore();
+  
   return (
-    <html lang="en">
+    <html lang="en" className={theme === "dark" ? "dark" : ""} suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
