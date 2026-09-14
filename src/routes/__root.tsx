@@ -11,7 +11,6 @@ import { useEffect, type ReactNode } from "react";
 
 import { Toaster } from "@/components/ui/sonner";
 import appCss from "../styles.css?url";
-import { useStore } from "@/lib/manakx/store";
 
 function NotFoundComponent() {
   return (
@@ -100,7 +99,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap",
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.jpg", type: "image/svg+xml" },
     ],
   }),
   shellComponent: RootShell,
@@ -110,12 +109,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
-  const { theme } = useStore();
-  
   return (
-    <html lang="en" className={theme === "dark" ? "dark" : ""} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=JSON.parse(localStorage.getItem("manakx.state.v1")||"{}").theme;if(t==="dark")document.documentElement.classList.add("dark")}catch(e){}})()`,
+          }}
+        />
       </head>
       <body>
         {children}
@@ -142,7 +144,7 @@ function RootComponent() {
         e.preventDefault();
       }
     };
-    
+
     const handleTouchStart = (e: TouchEvent) => {
       if (e.touches.length > 1) {
         e.preventDefault();
@@ -151,7 +153,7 @@ function RootComponent() {
 
     document.addEventListener("wheel", handleWheel, { passive: false });
     document.addEventListener("touchstart", handleTouchStart, { passive: false });
-    
+
     return () => {
       document.removeEventListener("wheel", handleWheel);
       document.removeEventListener("touchstart", handleTouchStart);
@@ -163,7 +165,7 @@ function RootComponent() {
 
     const path = location.pathname;
     const isAuthRoute = path === "/login" || path === "/signup" || path === "/";
-    
+
     // Not authenticated, trying to access a protected route
     if (!user && !isAuthRoute) {
       navigate({ to: "/login", replace: true });
@@ -198,8 +200,8 @@ function RootComponent() {
       const deny = (msg: string) => {
         const home = user.role === "Admin" ? "/admin"
           : user.role === "Technical Reviewer" ? "/reviewer"
-          : user.role === "Vendor/Supplier" ? "/vendor"
-          : "/dashboard";
+            : user.role === "Vendor/Supplier" ? "/vendor"
+              : "/dashboard";
         navigate({ to: home, replace: true });
         toast.error("Access Denied", { description: msg });
       };

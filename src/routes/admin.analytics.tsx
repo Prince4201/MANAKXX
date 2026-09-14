@@ -56,7 +56,7 @@ function AdminAnalytics() {
         return acc;
       }, {}),
   )
-    .map(([name, value]) => ({ name, value }))
+    .map(([name, value]) => ({ name: name.replace(/^Potentially missing:\s*/i, ""), value }))
     .sort((a, b) => b.value - a.value)
     .slice(0, 8);
 
@@ -111,7 +111,7 @@ function AdminAnalytics() {
               <BarChart data={gapData} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
                 <XAxis type="number" tick={{ fontSize: 11 }} allowDecimals={false} />
-                <YAxis type="category" dataKey="name" width={110} tick={{ fontSize: 11 }} />
+                <YAxis type="category" dataKey="name" width={160} tick={{ fontSize: 11 }} />
                 <Tooltip />
                 <Bar dataKey="value" fill="var(--chart-4)" radius={[0, 4, 4, 0]} />
               </BarChart>
