@@ -200,15 +200,15 @@ function getRoleLabel(role?: Role): string {
 function getRoleBadgeColor(role?: Role): string {
   switch (role) {
     case "Government Procurement Officer":
-      return "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20";
+      return "bg-gradient-to-r from-blue-500/15 to-indigo-500/15 text-blue-700 border border-blue-200/50 dark:from-blue-500/20 dark:to-indigo-500/20 dark:text-blue-300 dark:border-blue-800/40";
     case "Technical Reviewer":
-      return "bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20";
+      return "bg-gradient-to-r from-purple-500/15 to-pink-500/15 text-purple-700 border border-purple-200/50 dark:from-purple-500/20 dark:to-pink-500/20 dark:text-purple-300 dark:border-purple-800/40";
     case "Vendor/Supplier":
-      return "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20";
+      return "bg-gradient-to-r from-emerald-500/15 to-teal-500/15 text-emerald-700 border border-emerald-200/50 dark:from-emerald-500/20 dark:to-teal-500/20 dark:text-emerald-300 dark:border-emerald-800/40";
     case "Admin":
-      return "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20";
+      return "bg-gradient-to-r from-amber-500/15 to-orange-500/15 text-amber-700 border border-amber-200/50 dark:from-amber-500/20 dark:to-orange-500/20 dark:text-amber-300 dark:border-amber-800/40";
     default:
-      return "bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/20";
+      return "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400";
   }
 }
 
@@ -254,19 +254,19 @@ function getQuickAction(role?: Role): QuickAction | null {
 
 export function Logo({ compact }: { compact?: boolean }) {
   return (
-    <div className="flex items-center gap-3">
-      <div className="relative grid h-9 w-9 place-items-center overflow-hidden rounded-xl bg-gradient-to-br from-indigo-600 via-blue-600 to-cyan-500 text-white font-display text-xs font-black shadow-md shadow-indigo-500/20 ring-1 ring-white/20">
-        <span className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-emerald-400 to-teal-200" />
-        <span className="tracking-tighter">MX</span>
-        <span className="absolute -bottom-1 -right-1 h-3 w-3 rounded-full bg-emerald-400 ring-2 ring-background" />
+    <div className="group flex items-center gap-3">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-gradient-to-br from-indigo-500 via-blue-500 to-cyan-400 text-white shadow-lg shadow-blue-500/25 ring-1 ring-inset ring-white/20 transition-transform duration-300 group-hover:scale-105">
+        <span className="font-display text-[15px] font-black tracking-tighter">MX</span>
       </div>
       {!compact && (
-        <div className="leading-tight">
-          <div className="flex items-center gap-1.5">
-            <p className="font-display text-lg font-bold tracking-tight text-foreground">MANAK<span className="bg-gradient-to-r from-indigo-500 to-cyan-500 bg-clip-text text-transparent">X</span></p>
-            <span className="rounded-md bg-indigo-500/10 px-1.5 py-0.5 text-[9px] font-bold text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 uppercase tracking-widest">SIH '26</span>
+        <div className="flex flex-col justify-center leading-none">
+          <div className="flex items-center gap-2">
+            <p className="font-display text-[19px] font-bold tracking-tight">
+              MANAK<span className="bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent drop-shadow-sm transition-all duration-500 group-hover:from-indigo-300 group-hover:to-cyan-300">X</span>
+            </p>
+            <span className="inline-flex items-center rounded-full border border-indigo-400/30 bg-indigo-500/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-indigo-400 shadow-[0_0_10px_rgba(99,102,241,0.2)] transition-all duration-500 group-hover:bg-indigo-500/20 group-hover:shadow-[0_0_15px_rgba(99,102,241,0.4)]">SIH '26</span>
           </div>
-          <p className="text-[10px] font-medium tracking-wide text-muted-foreground/80">AI Standards & Compliance Intelligence</p>
+          <p className="mt-1 text-[10.5px] font-medium tracking-wide opacity-50 transition-opacity duration-300 group-hover:opacity-90">AI Standards & Compliance Intelligence</p>
         </div>
       )}
     </div>

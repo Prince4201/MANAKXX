@@ -124,6 +124,83 @@
   --chart-1: oklch(0.68 0.11 250);
   --chart-2: oklch(0.75 0.15 62);
   --chart-3: oklch(0.7 0.11 190);
+/* Utility CSS for MANAKX Landing & App UI */
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 2.5s infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 4s ease-in-out infinite;
+}
+
+.bg-grid-pattern {
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.bg-grid-pattern-light {
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.bg-dots-pattern {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.manakx-ink {
+  background-color: oklch(0.14 0.035 258);
+  color: oklch(0.97 0.005 250);
+}
+
+.aurora-ink {
+  background: radial-gradient(circle at 50% 0%, rgba(217, 119, 6, 0.15) 0%, rgba(14, 165, 233, 0.08) 40%, transparent 70%);
+}
+
+.ink-text {
+  color: oklch(0.98 0.005 250);
+}
+
+.ink-muted {
+  color: oklch(0.72 0.02 255);
+}
+
+.ink-panel {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px);
+}
+
+.glow-accent {
+  box-shadow: 0 0 25px -5px rgba(217, 119, 6, 0.4);
+}
+
+.glow-primary {
+  box-shadow: 0 0 25px -5px rgba(14, 165, 233, 0.35);
+}
+
   --chart-4: oklch(0.7 0.14 155);
   --chart-5: oklch(0.68 0.16 20);
   --sidebar: oklch(0.2 0.03 258);
@@ -200,6 +277,38 @@
   font-weight: 700;
   line-height: 0.8;
   color: transparent;
+/* Additional utilities for MANAKX Landing Page visuals */
+.bg-grid-pattern {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.glow-saffron {
+  box-shadow: 0 0 30px -5px rgba(245, 158, 11, 0.35);
+}
+
+.glow-cyan {
+  box-shadow: 0 0 30px -5px rgba(6, 182, 212, 0.35);
+}
+
+@keyframes floaty {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+.animate-float {
+  animation: floaty 6s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 4s ease-in-out infinite;
+}
+
   -webkit-text-stroke: 1px color-mix(in oklab, oklch(0.97 0.01 250) 13%, transparent);
   user-select: none;
 }

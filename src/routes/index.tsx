@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import {
   ArrowRight,
   BadgeCheck,
@@ -106,8 +107,22 @@ const SCENARIOS = [
 ];
 
 function Landing() {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 300);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
-    <div className="min-h-screen overflow-hidden bg-background">
+    <div className="min-h-screen overflow-hidden bg-background relative">
       {/* ---------- HERO ---------- */}
       <div className="manakx-ink relative overflow-hidden">
         <div className="aurora-ink pointer-events-none absolute inset-0" />
@@ -120,26 +135,25 @@ function Landing() {
         </p>
 
         {/* Orbital standards ring (desktop) */}
-        <div aria-hidden className="pointer-events-none absolute -right-40 top-1/2 hidden h-[46rem] w-[46rem] -translate-y-1/2 lg:block">
-          <div className="spin-slow absolute inset-0 rounded-full border border-dashed border-foreground/15" />
-          <div className="spin-slow-rev absolute inset-16 rounded-full border border-foreground/10" />
-          <div className="absolute inset-40 rounded-full border border-accent/20" />
-          <span className="absolute left-1/2 top-0 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent node-glow" />
-          <span className="absolute bottom-10 right-16 h-2 w-2 rounded-full bg-success/80" />
-          <span className="absolute left-10 top-1/3 h-2 w-2 rounded-full bg-info/80" />
-        </div>
-
-        <header className="relative z-30">
-          <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 lg:px-8">
-            <div className="ink-text">
+        <div className="fixed inset-x-0 top-6 z-50 flex justify-center px-4 transition-all duration-500">
+          <header className={`flex h-[76px] w-full max-w-6xl items-center justify-between rounded-full border pl-5 pr-3 backdrop-blur-2xl transition-all duration-500 ${
+            scrolled 
+              ? "bg-background/80 border-border shadow-lg shadow-black/5" 
+              : "border-white/10 bg-white/[0.03] shadow-[0_8px_32px_rgba(0,0,0,0.12)] hover:border-white/20 hover:bg-white/[0.06] hover:shadow-[0_16px_48px_rgba(0,0,0,0.2)]"
+          }`}>
+            <div className={`transition-transform duration-500 hover:scale-[1.02] ${scrolled ? "text-foreground" : "ink-text"}`}>
               <Logo />
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <Button
                 asChild
                 variant="ghost"
                 size="sm"
-                className="ink-muted hidden hover:bg-foreground/10 hover:text-foreground sm:inline-flex"
+                className={`hidden h-10 rounded-full px-5 text-[13px] font-medium tracking-wide transition-all duration-300 sm:inline-flex ${
+                  scrolled 
+                    ? "text-foreground/70 hover:bg-foreground/10 hover:text-foreground" 
+                    : "text-white/70 hover:bg-white/10 hover:text-white"
+                }`}
               >
                 <Link to="/standards">Standards</Link>
               </Button>
@@ -147,18 +161,38 @@ function Landing() {
                 asChild
                 variant="ghost"
                 size="sm"
-                className="ink-muted hidden hover:bg-foreground/10 hover:text-foreground sm:inline-flex"
+                className={`hidden h-10 rounded-full px-5 text-[13px] font-medium tracking-wide transition-all duration-300 sm:inline-flex ${
+                  scrolled 
+                    ? "text-foreground/70 hover:bg-foreground/10 hover:text-foreground" 
+                    : "text-white/70 hover:bg-white/10 hover:text-white"
+                }`}
               >
                 <Link to="/dashboard">Dashboard</Link>
               </Button>
-              <Button asChild size="sm" className="bg-accent text-accent-foreground hover:bg-accent/90">
-                <Link to="/login">Sign in</Link>
+              <div className={`mx-3 hidden h-6 w-px sm:block transition-colors duration-500 ${scrolled ? "bg-foreground/15" : "bg-white/15"}`} />
+              
+              <Button 
+                asChild 
+                size="sm" 
+                className={`group relative h-11 overflow-hidden rounded-full px-8 font-bold transition-all duration-500 hover:scale-[1.02] hover:ring-4 ${
+                  scrolled 
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:ring-primary/20"
+                    : "bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.15)] hover:shadow-[0_0_40px_rgba(255,255,255,0.3)] hover:ring-white/20"
+                }`}
+              >
+                <Link to="/login">
+                  <span className="relative z-10 flex items-center gap-2">
+                    Sign in
+                    <ArrowRight className="h-4 w-4 transition-transform duration-500 group-hover:translate-x-1" />
+                  </span>
+                  <div className="absolute inset-0 z-0 bg-gradient-to-r from-transparent via-black/5 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                </Link>
               </Button>
             </div>
-          </div>
-        </header>
+          </header>
+        </div>
 
-        <section className="relative mx-auto grid max-w-7xl gap-10 px-5 pb-20 pt-9 lg:grid-cols-[1.04fr_0.96fr] lg:px-8 lg:pb-24 lg:pt-16">
+        <section className="relative mx-auto grid max-w-7xl gap-10 px-5 pb-20 pt-32 lg:grid-cols-[1.04fr_0.96fr] lg:px-8 lg:pb-24 lg:pt-40">
           <div className="rise max-w-2xl">
             <span className="inline-flex items-center gap-2 border-l-2 border-accent bg-foreground/8 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider ink-text backdrop-blur-md">
               Smart India Hackathon 2026 · SIH26108
@@ -434,6 +468,17 @@ function Landing() {
         MANAKX · Intelligent Indian Standards Recommendation for Procurement · Prototype uses synthetic standards data
         for demonstration purposes and does not represent official BIS guidance.
       </footer>
+
+      {/* Scroll to Top Button */}
+      <button
+        onClick={scrollToTop}
+        className={`fixed bottom-8 right-8 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-accent text-accent-foreground shadow-[0_0_20px_rgba(var(--accent-rgb),0.3)] transition-all duration-300 hover:scale-110 hover:bg-accent/90 ${
+          scrolled ? "translate-y-0 opacity-100" : "translate-y-12 pointer-events-none opacity-0"
+        }`}
+        aria-label="Scroll to top"
+      >
+        <ArrowRight className="h-5 w-5 -rotate-90" />
+      </button>
     </div>
   );
 }
