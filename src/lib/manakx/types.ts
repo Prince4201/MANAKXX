@@ -178,6 +178,51 @@ export interface Weights {
   category: number;
 }
 
+export type ProductStatus = "DRAFT" | "NEEDS_DOCUMENT" | "READY" | "INACTIVE";
+
+export interface Product {
+  id: string;
+  vendor_id: string;
+  name: string;
+  code?: string;
+  category: string;
+  subcategory?: string;
+  manufacturer?: string;
+  model_number?: string;
+  description?: string;
+  status: ProductStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProductDocument {
+  id: string;
+  product_id: string;
+  vendor_id: string;
+  document_type: string;
+  file_name: string;
+  storage_path: string;
+  file_type?: string;
+  file_size?: number;
+  uploaded_by?: string;
+  created_at: string;
+}
+
+export interface ProductSpecification {
+  id: string;
+  product_id: string;
+  vendor_id: string;
+  parameter: string;
+  value: string;
+  unit?: string;
+  normalized_value?: string;
+  source_document_id?: string;
+  source_text?: string;
+  confidence?: number;
+  is_manual: boolean;
+  created_at: string;
+}
+
 export interface AppState {
   user: User | null;
   analyses: Analysis[];
@@ -187,4 +232,68 @@ export interface AppState {
   weights: Weights;
   theme: "light" | "dark";
   compare: string[]; // standard ids
+}
+
+// ------------------------------------------------------------------
+// STEP 4: VENDOR ASSESSMENT TYPES
+// ------------------------------------------------------------------
+
+export type AssessmentStatus = "DRAFT" | "PROCESSING" | "COMPLETED" | "FAILED";
+export type AssessmentResultStatus = "MATCH" | "PARTIAL" | "MISSING" | "WARNING" | "NOT_ASSESSABLE";
+
+export interface Assessment {
+  id: string;
+  procurement_id: string;
+  product_id: string;
+  vendor_id: string;
+  status: AssessmentStatus;
+  overall_score?: number;
+  confidence?: number;
+  engine_version?: string;
+  created_at: string;
+  updated_at: string;
+  completed_at?: string;
+}
+
+export interface AssessmentResult {
+  id: string;
+  assessment_id: string;
+  requirement_id: string;
+  status: AssessmentResultStatus;
+  score?: number;
+  product_value?: string;
+  required_value?: string;
+  unit?: string;
+  evidence?: string;
+  explanation?: string;
+  source_document_id?: string;
+  created_at: string;
+}
+
+// Contract for ML Integration
+export interface MLAssessmentRequest {
+  procurement: Partial<Analysis>;
+  requirements: Requirement[];
+  vendor_product: Partial<Product>;
+  product_specifications: ProductSpecification[];
+  documents: ProductDocument[];
+  standards?: any[];
+}
+
+export interface MLAssessmentResponse {
+  overall_score: number;
+  confidence: number;
+  requirement_results: Array<{
+    requirement_id: string;
+    status: AssessmentResultStatus;
+    score: number;
+    product_value?: string;
+    required_value?: string;
+    evidence?: string;
+    explanation?: string;
+    source_document_id?: string;
+  }>;
+  gaps: any[];
+  warnings: any[];
+  recommendations?: any[];
 }

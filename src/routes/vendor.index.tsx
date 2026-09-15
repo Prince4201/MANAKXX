@@ -50,7 +50,7 @@ function VendorDashboard() {
         <KpiCard label="Available Assessments" value={stats?.availableProcurements ?? 0} sub="Open for self-assessment" icon={Briefcase} />
         <KpiCard label="Assessments Started" value={0} sub="In progress" icon={ClipboardCheck} />
         <KpiCard label="Assessments Completed" value={0} sub="Requirement coverage calculated" icon={FileText} />
-        <KpiCard label="Products Registered" value={0} sub="Datasheets uploaded" icon={Package} />
+        <KpiCard label="Products Registered" value={stats?.productsCount ?? 0} sub="Datasheets uploaded" icon={Package} />
       </div>
 
       {/* Quick Actions */}
