@@ -264,7 +264,7 @@ export function Logo({ compact }: { compact?: boolean }) {
             <p className="font-display text-[19px] font-bold tracking-tight">
               MANAK<span className="bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent drop-shadow-sm transition-all duration-500 group-hover:from-indigo-300 group-hover:to-cyan-300">X</span>
             </p>
-            <span className="inline-flex items-center rounded-full border border-indigo-400/30 bg-indigo-500/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-indigo-400 shadow-[0_0_10px_rgba(99,102,241,0.2)] transition-all duration-500 group-hover:bg-indigo-500/20 group-hover:shadow-[0_0_15px_rgba(99,102,241,0.4)]">SIH '26</span>
+            {/* <span className="inline-flex items-center rounded-full border border-indigo-400/30 bg-indigo-500/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-indigo-400 shadow-[0_0_10px_rgba(99,102,241,0.2)] transition-all duration-500 group-hover:bg-indigo-500/20 group-hover:shadow-[0_0_15px_rgba(99,102,241,0.4)]">Sih6</span> */}
           </div>
           <p className="mt-1 text-[10.5px] font-medium tracking-wide opacity-50 transition-opacity duration-300 group-hover:opacity-90">AI Standards & Compliance Intelligence</p>
         </div>
