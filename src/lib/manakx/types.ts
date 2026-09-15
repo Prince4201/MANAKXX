@@ -156,13 +156,18 @@ export interface User {
   name: string;
   role: Role;
   email: string;
-  status: "PENDING" | "ACTIVE" | "SUSPENDED" | "REJECTED";
+  status: "PENDING_APPROVAL" | "PENDING_REVIEW" | "ACTIVE" | "REJECTED" | "SUSPENDED";
   organization?: string;
   department?: string;
   employee_id?: string;
   company_name?: string;
   industry?: string;
   phone?: string;
+  rejection_reason?: string;
+  reviewed_by?: string;
+  reviewed_at?: string;
+  approved_by?: string;
+  approved_at?: string;
 }
 
 export interface Weights {

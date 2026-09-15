@@ -186,7 +186,7 @@ function RootComponent() {
       if (user.status !== "ACTIVE") {
         const allowedPaths = ["/account-pending", "/account-rejected", "/account-suspended"];
         if (!allowedPaths.includes(path) && path !== "/login" && path !== "/signup" && path !== "/") {
-          if (user.status === "PENDING") {
+          if (user.status === "PENDING_APPROVAL" || user.status === "PENDING_REVIEW") {
             navigate({ to: "/account-pending", replace: true });
           } else if (user.status === "REJECTED") {
             navigate({ to: "/account-rejected", replace: true });

@@ -39,6 +39,7 @@ import { Route as ReviewerProfileRouteImport } from './routes/reviewer.profile'
 import { Route as ReviewerQueueRouteImport } from './routes/reviewer.queue'
 import { Route as StandardsIndexRouteImport } from './routes/standards.index'
 import { Route as StandardsIdRouteImport } from './routes/standards.$id'
+import { Route as VendorIndexRouteImport } from './routes/vendor.index'
 import { Route as VendorAssessmentsRouteImport } from './routes/vendor.assessments'
 import { Route as VendorDocumentsRouteImport } from './routes/vendor.documents'
 import { Route as VendorHistoryRouteImport } from './routes/vendor.history'
@@ -197,6 +198,11 @@ const StandardsIdRoute = StandardsIdRouteImport.update({
   path: '/standards/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VendorIndexRoute = VendorIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => VendorRoute,
+} as any)
 const VendorAssessmentsRoute = VendorAssessmentsRouteImport.update({
   id: '/assessments',
   path: '/assessments',
@@ -270,6 +276,7 @@ export interface FileRoutesByFullPath {
   '/vendor/profile': typeof VendorProfileRoute
   '/admin/': typeof AdminIndexRoute
   '/standards/': typeof StandardsIndexRoute
+  '/vendor/': typeof VendorIndexRoute
   '/analysis/$id/report': typeof AnalysisIdReportRoute
 }
 export interface FileRoutesByTo {
@@ -286,7 +293,6 @@ export interface FileRoutesByTo {
   '/reviewer': typeof ReviewerRouteWithChildren
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
-  '/vendor': typeof VendorRouteWithChildren
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/profile': typeof AdminProfileRoute
@@ -309,6 +315,7 @@ export interface FileRoutesByTo {
   '/vendor/profile': typeof VendorProfileRoute
   '/admin': typeof AdminIndexRoute
   '/standards': typeof StandardsIndexRoute
+  '/vendor': typeof VendorIndexRoute
   '/analysis/$id/report': typeof AnalysisIdReportRoute
 }
 export interface FileRoutesById {
@@ -349,6 +356,7 @@ export interface FileRoutesById {
   '/vendor/profile': typeof VendorProfileRoute
   '/admin/': typeof AdminIndexRoute
   '/standards/': typeof StandardsIndexRoute
+  '/vendor/': typeof VendorIndexRoute
   '/analysis/$id/report': typeof AnalysisIdReportRoute
 }
 export interface FileRouteTypes {
@@ -390,6 +398,7 @@ export interface FileRouteTypes {
     | '/vendor/profile'
     | '/admin/'
     | '/standards/'
+    | '/vendor/'
     | '/analysis/$id/report'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -406,7 +415,6 @@ export interface FileRouteTypes {
     | '/reviewer'
     | '/settings'
     | '/signup'
-    | '/vendor'
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/profile'
@@ -429,6 +437,7 @@ export interface FileRouteTypes {
     | '/vendor/profile'
     | '/admin'
     | '/standards'
+    | '/vendor'
     | '/analysis/$id/report'
   id:
     | '__root__'
@@ -468,6 +477,7 @@ export interface FileRouteTypes {
     | '/vendor/profile'
     | '/admin/'
     | '/standards/'
+    | '/vendor/'
     | '/analysis/$id/report'
   fileRoutesById: FileRoutesById
 }
@@ -713,6 +723,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StandardsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/vendor/': {
+      id: '/vendor/'
+      path: '/'
+      fullPath: '/vendor/'
+      preLoaderRoute: typeof VendorIndexRouteImport
+      parentRoute: typeof VendorRoute
+    }
     '/vendor/assessments': {
       id: '/vendor/assessments'
       path: '/assessments'
@@ -788,6 +805,7 @@ interface VendorRouteChildren {
   VendorProcurementsRoute: typeof VendorProcurementsRoute
   VendorProductsRoute: typeof VendorProductsRoute
   VendorProfileRoute: typeof VendorProfileRoute
+  VendorIndexRoute: typeof VendorIndexRoute
 }
 
 const VendorRouteChildren: VendorRouteChildren = {
@@ -797,6 +815,7 @@ const VendorRouteChildren: VendorRouteChildren = {
   VendorProcurementsRoute: VendorProcurementsRoute,
   VendorProductsRoute: VendorProductsRoute,
   VendorProfileRoute: VendorProfileRoute,
+  VendorIndexRoute: VendorIndexRoute,
 }
 
 const VendorRouteWithChildren =

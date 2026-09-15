@@ -32,6 +32,14 @@ function AdminUsersPage() {
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [newRole, setNewRole] = useState("Technical Reviewer");
+  
+  // Role-specific fields
+  const [newCompany, setNewCompany] = useState("");
+  const [newIndustry, setNewIndustry] = useState("");
+  const [newPhone, setNewPhone] = useState("");
+  const [newOrg, setNewOrg] = useState("");
+  const [newDept, setNewDept] = useState("");
+  const [newEmpId, setNewEmpId] = useState("");
 
   const fetchUsers = async () => {
     if (!supabase) return;
@@ -51,16 +59,40 @@ function AdminUsersPage() {
 
   const handleStatusChange = async (userId: string, newStatus: string) => {
     if (!supabase) return;
-    const { error } = await supabase.from("profiles").update({ status: newStatus }).eq("id", userId);
+
+    let reason = null;
+    if (newStatus === "REJECTED" || newStatus === "SUSPENDED") {
+      reason = window.prompt(`Please provide a reason for marking this user as ${newStatus}:`);
+      if (reason === null) return; // User cancelled
+      if (!reason.trim()) {
+        toast.error("A reason is required.");
+        return;
+      }
+    }
+
+    const { data: { session } } = await supabase.auth.getSession();
+    const updateData: any = { status: newStatus };
+    
+    if (newStatus === "ACTIVE") {
+      updateData.approved_by = session?.user?.id;
+      updateData.approved_at = new Date().toISOString();
+    } else if (newStatus === "REJECTED") {
+      updateData.rejection_reason = reason;
+      updateData.reviewed_by = session?.user?.id;
+      updateData.reviewed_at = new Date().toISOString();
+    }
+
+    const { error } = await supabase.from("profiles").update(updateData).eq("id", userId);
     
     if (error) {
       toast.error(`Failed to update to ${newStatus}`);
     } else {
       toast.success(`User updated to ${newStatus}`);
       await supabase.from("audit_logs").insert({
-        action: `Status changed to ${newStatus}`,
+        user_id: session?.user?.id,
+        action: `Status changed to ${newStatus}${reason ? ` (Reason: ${reason})` : ''}`,
         entity: "User Management",
-        details: { targetUserId: userId },
+        entity_id: userId,
       });
       fetchUsers();
     }
@@ -70,12 +102,34 @@ function AdminUsersPage() {
     e.preventDefault();
     setCreating(true);
     try {
-      await createAdminUser({ data: { email: newEmail, name: newName, role: newRole as any } });
-      toast.success("User created successfully", { description: "An email with instructions has been sent." });
+      const { data: { session } } = await supabase!.auth.getSession();
+      if (!session) throw new Error("No active session");
+      
+      let metadata: any = {};
+      if (newRole === "Vendor/Supplier") {
+        metadata = { company_name: newCompany, industry: newIndustry, phone: newPhone };
+      } else if (newRole === "Government Procurement Officer") {
+        metadata = { organization: newOrg, department: newDept, employee_id: newEmpId };
+      }
+
+      await createAdminUser({ data: { 
+        token: session.access_token,
+        email: newEmail, 
+        name: newName, 
+        role: newRole as any,
+        metadata
+      } });
+      toast.success("User created successfully", { description: "They can sign in immediately." });
       setIsCreateModalOpen(false);
       setNewName("");
       setNewEmail("");
       setNewRole("Technical Reviewer");
+      setNewCompany("");
+      setNewIndustry("");
+      setNewPhone("");
+      setNewOrg("");
+      setNewDept("");
+      setNewEmpId("");
       fetchUsers();
     } catch (err: any) {
       toast.error("Failed to create user", { description: err.message });
@@ -126,11 +180,45 @@ function AdminUsersPage() {
                       <SelectValue placeholder="Select a role" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="Government Procurement Officer">Procurement Officer</SelectItem>
+                      <SelectItem value="Vendor/Supplier">Vendor / Supplier</SelectItem>
                       <SelectItem value="Technical Reviewer">Technical Reviewer</SelectItem>
                       <SelectItem value="Admin">Administrator</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
+                {newRole === "Vendor/Supplier" && (
+                  <>
+                    <div className="grid gap-2">
+                      <Label htmlFor="company">Company Name</Label>
+                      <Input id="company" required value={newCompany} onChange={(e) => setNewCompany(e.target.value)} disabled={creating} />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="industry">Industry</Label>
+                      <Input id="industry" required value={newIndustry} onChange={(e) => setNewIndustry(e.target.value)} disabled={creating} />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="phone">Phone</Label>
+                      <Input id="phone" type="tel" required value={newPhone} onChange={(e) => setNewPhone(e.target.value)} disabled={creating} />
+                    </div>
+                  </>
+                )}
+                {newRole === "Government Procurement Officer" && (
+                  <>
+                    <div className="grid gap-2">
+                      <Label htmlFor="org">Organization</Label>
+                      <Input id="org" required value={newOrg} onChange={(e) => setNewOrg(e.target.value)} disabled={creating} />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="dept">Department</Label>
+                      <Input id="dept" required value={newDept} onChange={(e) => setNewDept(e.target.value)} disabled={creating} />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="empid">Employee ID</Label>
+                      <Input id="empid" required value={newEmpId} onChange={(e) => setNewEmpId(e.target.value)} disabled={creating} />
+                    </div>
+                  </>
+                )}
               </div>
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setIsCreateModalOpen(false)} disabled={creating}>

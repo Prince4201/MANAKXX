@@ -136,11 +136,10 @@ function Landing() {
 
         {/* Orbital standards ring (desktop) */}
         <div className="fixed inset-x-0 top-6 z-50 flex justify-center px-4 transition-all duration-500">
-          <header className={`flex h-[76px] w-full max-w-6xl items-center justify-between rounded-full border pl-5 pr-3 backdrop-blur-2xl transition-all duration-500 ${
-            scrolled 
-              ? "bg-background/80 border-border shadow-lg shadow-black/5" 
+          <header className={`flex h-[76px] w-full max-w-6xl items-center justify-between rounded-full border pl-5 pr-3 backdrop-blur-2xl transition-all duration-500 ${scrolled
+              ? "bg-background/80 border-border shadow-lg shadow-black/5"
               : "border-white/10 bg-white/[0.03] shadow-[0_8px_32px_rgba(0,0,0,0.12)] hover:border-white/20 hover:bg-white/[0.06] hover:shadow-[0_16px_48px_rgba(0,0,0,0.2)]"
-          }`}>
+            }`}>
             <div className={`transition-transform duration-500 hover:scale-[1.02] ${scrolled ? "text-foreground" : "ink-text"}`}>
               <Logo />
             </div>
@@ -149,11 +148,10 @@ function Landing() {
                 asChild
                 variant="ghost"
                 size="sm"
-                className={`hidden h-10 rounded-full px-5 text-[13px] font-medium tracking-wide transition-all duration-300 sm:inline-flex ${
-                  scrolled 
-                    ? "text-foreground/70 hover:bg-foreground/10 hover:text-foreground" 
+                className={`hidden h-10 rounded-full px-5 text-[13px] font-medium tracking-wide transition-all duration-300 sm:inline-flex ${scrolled
+                    ? "text-foreground/70 hover:bg-foreground/10 hover:text-foreground"
                     : "text-white/70 hover:bg-white/10 hover:text-white"
-                }`}
+                  }`}
               >
                 <Link to="/standards">Standards</Link>
               </Button>
@@ -161,24 +159,22 @@ function Landing() {
                 asChild
                 variant="ghost"
                 size="sm"
-                className={`hidden h-10 rounded-full px-5 text-[13px] font-medium tracking-wide transition-all duration-300 sm:inline-flex ${
-                  scrolled 
-                    ? "text-foreground/70 hover:bg-foreground/10 hover:text-foreground" 
+                className={`hidden h-10 rounded-full px-5 text-[13px] font-medium tracking-wide transition-all duration-300 sm:inline-flex ${scrolled
+                    ? "text-foreground/70 hover:bg-foreground/10 hover:text-foreground"
                     : "text-white/70 hover:bg-white/10 hover:text-white"
-                }`}
+                  }`}
               >
                 <Link to="/dashboard">Dashboard</Link>
               </Button>
               <div className={`mx-3 hidden h-6 w-px sm:block transition-colors duration-500 ${scrolled ? "bg-foreground/15" : "bg-white/15"}`} />
-              
-              <Button 
-                asChild 
-                size="sm" 
-                className={`group relative h-11 overflow-hidden rounded-full px-8 font-bold transition-all duration-500 hover:scale-[1.02] hover:ring-4 ${
-                  scrolled 
+
+              <Button
+                asChild
+                size="sm"
+                className={`group relative h-11 overflow-hidden rounded-full px-8 font-bold transition-all duration-500 hover:scale-[1.02] hover:ring-4 ${scrolled
                     ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:ring-primary/20"
                     : "bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.15)] hover:shadow-[0_0_40px_rgba(255,255,255,0.3)] hover:ring-white/20"
-                }`}
+                  }`}
               >
                 <Link to="/login">
                   <span className="relative z-10 flex items-center gap-2">
@@ -290,7 +286,7 @@ function Landing() {
                       <p className="ink-muted text-[11px]">
                         {id} · {band}
                       </p>
-                       <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-foreground/10">
+                      <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-foreground/10">
                         <div className="h-full rounded-full bg-accent" style={{ width: `${score}%` }} />
                       </div>
                     </div>
@@ -303,10 +299,10 @@ function Landing() {
               </p>
             </div>
 
-            <div className="ink-panel floaty absolute -bottom-6 -left-6 hidden rounded-md border-l-2 border-l-accent px-4 py-3 shadow-xl [animation-delay:1.4s] sm:block">
+            {/* <div className="ink-panel floaty absolute -bottom-6 -left-6 hidden rounded-md border-l-2 border-l-accent px-4 py-3 shadow-xl [animation-delay:1.4s] sm:block">
               <p className="ink-muted text-[10px] uppercase tracking-wide">Conflicts found</p>
               <p className="font-display text-lg font-semibold text-accent">1 quantity clash</p>
-            </div>
+            </div> */}
 
             <div className="ink-panel floaty absolute -top-16 right-0 hidden rounded-md border-l-2 border-l-success px-4 py-3 shadow-xl [animation-delay:0.7s] lg:block">
               <p className="ink-muted text-[10px] uppercase tracking-wide">Knowledge base</p>
@@ -335,12 +331,12 @@ function Landing() {
         <div className="grid gap-6 md:grid-cols-[auto_1fr] md:items-end md:gap-16">
           <p className="text-xs font-semibold uppercase tracking-wider text-accent-foreground">01 · The workflow</p>
           <div className="max-w-3xl">
-          <h2 className="mt-3 font-display text-3xl font-semibold sm:text-4xl">
-            Six steps from raw tender text to a defensible recommendation
-          </h2>
-          <p className="mt-3 text-muted-foreground">
-            Each stage is visible in the product — nothing happens behind a loading spinner you can't inspect.
-          </p>
+            <h2 className="mt-3 font-display text-3xl font-semibold sm:text-4xl">
+              Six steps from raw tender text to a defensible recommendation
+            </h2>
+            <p className="mt-3 text-muted-foreground">
+              Each stage is visible in the product — nothing happens behind a loading spinner you can't inspect.
+            </p>
           </div>
         </div>
 
@@ -472,9 +468,8 @@ function Landing() {
       {/* Scroll to Top Button */}
       <button
         onClick={scrollToTop}
-        className={`fixed bottom-8 right-8 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-accent text-accent-foreground shadow-[0_0_20px_rgba(var(--accent-rgb),0.3)] transition-all duration-300 hover:scale-110 hover:bg-accent/90 ${
-          scrolled ? "translate-y-0 opacity-100" : "translate-y-12 pointer-events-none opacity-0"
-        }`}
+        className={`fixed bottom-8 right-8 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-accent text-accent-foreground shadow-[0_0_20px_rgba(var(--accent-rgb),0.3)] transition-all duration-300 hover:scale-110 hover:bg-accent/90 ${scrolled ? "translate-y-0 opacity-100" : "translate-y-12 pointer-events-none opacity-0"
+          }`}
         aria-label="Scroll to top"
       >
         <ArrowRight className="h-5 w-5 -rotate-90" />

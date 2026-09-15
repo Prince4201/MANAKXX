@@ -77,6 +77,11 @@ export async function getProfile(userId: string): Promise<User | null> {
     company_name: data.company_name,
     industry: data.industry,
     phone: data.phone,
+    rejection_reason: data.rejection_reason,
+    reviewed_by: data.reviewed_by,
+    reviewed_at: data.reviewed_at,
+    approved_by: data.approved_by,
+    approved_at: data.approved_at,
   };
 }
 
