@@ -1,6 +1,8 @@
 -- 010_vendor_products.sql
 -- Create tables for Vendor Products, Documents, and Specifications
 
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 -- 1. Create Products Table
 CREATE TABLE IF NOT EXISTS public.products (
   id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -20,10 +22,12 @@ CREATE TABLE IF NOT EXISTS public.products (
 -- RLS for products
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Vendors can do all on own products" ON public.products;
 CREATE POLICY "Vendors can do all on own products"
   ON public.products
   FOR ALL
-  USING (vendor_id = auth.uid());
+  USING (vendor_id = auth.uid())
+  WITH CHECK (vendor_id = auth.uid());
 
 -- 2. Create Product Documents Table
 CREATE TABLE IF NOT EXISTS public.product_documents (
@@ -42,10 +46,12 @@ CREATE TABLE IF NOT EXISTS public.product_documents (
 -- RLS for product_documents
 ALTER TABLE public.product_documents ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Vendors can do all on own documents" ON public.product_documents;
 CREATE POLICY "Vendors can do all on own documents"
   ON public.product_documents
   FOR ALL
-  USING (vendor_id = auth.uid());
+  USING (vendor_id = auth.uid())
+  WITH CHECK (vendor_id = auth.uid());
 
 -- 3. Create Product Specifications Table (Preparation for ML)
 CREATE TABLE IF NOT EXISTS public.product_specifications (
@@ -66,39 +72,45 @@ CREATE TABLE IF NOT EXISTS public.product_specifications (
 -- RLS for product_specifications
 ALTER TABLE public.product_specifications ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Vendors can do all on own specifications" ON public.product_specifications;
 CREATE POLICY "Vendors can do all on own specifications"
   ON public.product_specifications
   FOR ALL
-  USING (vendor_id = auth.uid());
+  USING (vendor_id = auth.uid())
+  WITH CHECK (vendor_id = auth.uid());
 
 -- 4. Create Storage Bucket for Vendor Documents
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 VALUES (
-  'vendor_documents', 
-  'vendor_documents', 
-  false, 
+  'vendor_documents',
+  'vendor_documents',
+  false,
   52428800, -- 50MB
   '{"application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "image/png", "image/jpeg"}'
 )
-ON CONFLICT (id) DO UPDATE SET 
+ON CONFLICT (id) DO UPDATE SET
   public = EXCLUDED.public,
   file_size_limit = EXCLUDED.file_size_limit,
   allowed_mime_types = EXCLUDED.allowed_mime_types;
 
 -- 5. Storage RLS Policies
 -- Allow users to upload, read, update, delete files in their own folder (folder name = auth.uid())
+DROP POLICY IF EXISTS "Vendors can upload own documents" ON storage.objects;
 CREATE POLICY "Vendors can upload own documents"
   ON storage.objects FOR INSERT
   WITH CHECK (bucket_id = 'vendor_documents' AND auth.uid()::text = (string_to_array(name, '/'))[1]);
 
+DROP POLICY IF EXISTS "Vendors can update own documents" ON storage.objects;
 CREATE POLICY "Vendors can update own documents"
   ON storage.objects FOR UPDATE
   USING (bucket_id = 'vendor_documents' AND auth.uid()::text = (string_to_array(name, '/'))[1]);
 
+DROP POLICY IF EXISTS "Vendors can read own documents" ON storage.objects;
 CREATE POLICY "Vendors can read own documents"
   ON storage.objects FOR SELECT
   USING (bucket_id = 'vendor_documents' AND auth.uid()::text = (string_to_array(name, '/'))[1]);
 
+DROP POLICY IF EXISTS "Vendors can delete own documents" ON storage.objects;
 CREATE POLICY "Vendors can delete own documents"
   ON storage.objects FOR DELETE
   USING (bucket_id = 'vendor_documents' AND auth.uid()::text = (string_to_array(name, '/'))[1]);
@@ -112,7 +124,22 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS on_product_update ON public.products;
 CREATE TRIGGER on_product_update
   BEFORE UPDATE ON public.products
   FOR EACH ROW
   EXECUTE PROCEDURE public.handle_updated_at();
+
+CREATE INDEX IF NOT EXISTS products_vendor_id_created_at_idx
+  ON public.products (vendor_id, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS product_documents_product_id_idx
+  ON public.product_documents (product_id);
+
+CREATE INDEX IF NOT EXISTS product_documents_vendor_id_created_at_idx
+  ON public.product_documents (vendor_id, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS product_specifications_product_id_idx
+  ON public.product_specifications (product_id);
+
+NOTIFY pgrst, 'reload schema';

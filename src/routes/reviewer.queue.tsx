@@ -18,7 +18,7 @@ export const Route = createFileRoute("/reviewer/queue")({
 
 function ReviewerQueue() {
   const { analyses } = useStore();
-  const pendingAnalyses = analyses.filter((a) => a.status === "Needs Review" || a.status === "Completed");
+  const pendingAnalyses = analyses.filter((a) => a.status === "UNDER_REVIEW");
 
   const [vendors, setVendors] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -112,6 +112,9 @@ function ReviewerQueue() {
               </span>
             )}
           </TabsTrigger>
+          <TabsTrigger value="evaluations">
+            Final Evaluations
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="procurements">
@@ -198,6 +201,29 @@ function ReviewerQueue() {
               ))}
             </div>
           )}
+        </TabsContent>
+
+        <TabsContent value="evaluations">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {analyses.filter(a => a.status === 'PUBLISHED').map((a) => (
+              <Card key={a.id} className="transition-shadow hover:shadow-md">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-xs text-muted-foreground">{a.id}</span>
+                    <StatusBadge status={a.status} />
+                  </div>
+                  <CardTitle className="text-base">{a.tenderTitle}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Button asChild className="w-full">
+                    <Link to="/officer/evaluation" search={{ tenderId: a.id }}>
+                      Review Final Shortlist
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </TabsContent>
       </Tabs>
     </AppShell>

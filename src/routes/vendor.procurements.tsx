@@ -22,7 +22,7 @@ function VendorProcurements() {
   
   // Vendor rule: Approved/Completed analyses
   const availableProcurements = useMemo(() => 
-    analyses.filter((a) => a.status === "Approved" || a.status === "Completed"),
+    analyses.filter((a) => a.status === "PUBLISHED"),
   [analyses]);
 
   const [search, setSearch] = useState("");
@@ -122,9 +122,14 @@ function VendorProcurements() {
                   <Button variant="outline" className="flex-1" onClick={() => setSelectedProcurement(a)}>
                     View Details
                   </Button>
-                  <Button className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90" asChild>
+                  <Button className="flex-1" variant="outline" asChild>
                     <Link to="/vendor/assessments/new" search={{ procurement: a.id }}>
                       Assess
+                    </Link>
+                  </Button>
+                  <Button className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90" asChild>
+                    <Link to="/vendor/applications/new" search={{ procurement: a.id }}>
+                      Apply
                     </Link>
                   </Button>
                 </div>
@@ -237,9 +242,14 @@ function VendorProcurements() {
                 
                 <div className="pt-4 flex justify-end gap-3 border-t">
                   <Button variant="outline" onClick={() => setSelectedProcurement(null)}>Close</Button>
-                  <Button asChild>
+                  <Button variant="outline" asChild>
                     <Link to="/vendor/assessments/new" search={{ procurement: selectedProcurement.id }}>
-                      <ClipboardCheck className="mr-2 h-4 w-4" /> Start Self-Assessment
+                      <ClipboardCheck className="mr-2 h-4 w-4" /> Self-Assessment
+                    </Link>
+                  </Button>
+                  <Button asChild>
+                    <Link to="/vendor/applications/new" search={{ procurement: selectedProcurement.id }}>
+                      <ClipboardCheck className="mr-2 h-4 w-4" /> Apply for Tender
                     </Link>
                   </Button>
                 </div>

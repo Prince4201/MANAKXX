@@ -48,8 +48,8 @@ function VendorDashboard() {
       {/* KPI Row */}
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard label="Available Assessments" value={stats?.availableProcurements ?? 0} sub="Open for self-assessment" icon={Briefcase} />
-        <KpiCard label="Assessments Started" value={0} sub="In progress" icon={ClipboardCheck} />
-        <KpiCard label="Assessments Completed" value={0} sub="Requirement coverage calculated" icon={FileText} />
+        <KpiCard label="Assessments Started" value={stats?.assessmentsStarted ?? 0} sub="In progress" icon={ClipboardCheck} />
+        <KpiCard label="Assessments Completed" value={stats?.assessmentsCompleted ?? 0} sub="Requirement coverage calculated" icon={FileText} />
         <KpiCard label="Products Registered" value={stats?.productsCount ?? 0} sub="Datasheets uploaded" icon={Package} />
       </div>
 

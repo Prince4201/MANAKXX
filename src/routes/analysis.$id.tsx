@@ -93,7 +93,7 @@ function AnalysisPage() {
       setStep(i);
       if (i >= PIPELINE.length) {
         clearInterval(t);
-        actions.updateAnalysis(id, { status: "Completed" });
+        actions.updateAnalysis(id, { status: "DRAFT" });
         toast.success("Analysis complete", { description: "Ranked standards recommendations are ready." });
         navigate({ to: "/analysis/$id", params: { id }, search: {}, replace: true });
       }
@@ -231,12 +231,19 @@ function ResultsView({ analysis }: { analysis: Analysis }) {
           </Button>
           {(user?.role === "Government Procurement Officer" || user?.role === "Admin") && (
             <>
-              {analysis.status === "Draft" || analysis.status === "Completed" ? (
+              {analysis.status === "DRAFT" || analysis.status === "CHANGES_REQUESTED" ? (
                 <Button onClick={() => {
-                  actions.updateAnalysis(analysis.id, { status: "Needs Review" });
+                  actions.updateAnalysis(analysis.id, { status: "UNDER_REVIEW" });
                   toast.success("Sent for Review", { description: "Procurement forwarded to Technical Reviewers." });
                 }}>
                   <ShieldCheck className="mr-1.5 h-4 w-4" /> Send for Technical Review
+                </Button>
+              ) : analysis.status === "APPROVED" ? (
+                <Button onClick={() => {
+                  actions.updateAnalysis(analysis.id, { status: "PUBLISHED" });
+                  toast.success("Tender Published", { description: "Vendors can now apply to this tender." });
+                }} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                  <FileText className="mr-1.5 h-4 w-4" /> Publish Tender
                 </Button>
               ) : (
                 <Button asChild variant="outline">
@@ -252,9 +259,9 @@ function ResultsView({ analysis }: { analysis: Analysis }) {
               </Button>
             </>
           )}
-          {(user?.role === "Technical Reviewer" || user?.role === "Admin") && analysis.status === "Needs Review" && (
+          {(user?.role === "Technical Reviewer" || user?.role === "Admin") && analysis.status === "UNDER_REVIEW" && (
             <Button onClick={() => {
-              actions.updateAnalysis(analysis.id, { status: "Approved" });
+              actions.updateAnalysis(analysis.id, { status: "APPROVED" });
               toast.success("Procurement Approved", { description: "All recommendations have been verified." });
             }} className="bg-green-600 hover:bg-green-700">
               <CheckCircle2 className="mr-1.5 h-4 w-4" /> Complete Final Review

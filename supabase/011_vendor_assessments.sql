@@ -1,6 +1,8 @@
 -- 011_vendor_assessments.sql
 -- Create tables for Vendor AI Self-Assessments
 
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 -- 1. Create Assessments Table
 CREATE TABLE IF NOT EXISTS public.assessments (
   id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -19,10 +21,12 @@ CREATE TABLE IF NOT EXISTS public.assessments (
 -- RLS for assessments
 ALTER TABLE public.assessments ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Vendors can do all on own assessments" ON public.assessments;
 CREATE POLICY "Vendors can do all on own assessments"
   ON public.assessments
   FOR ALL
-  USING (vendor_id = auth.uid());
+  USING (vendor_id = auth.uid())
+  WITH CHECK (vendor_id = auth.uid());
 
 -- 2. Create Assessment Results Table (Requirement-by-Requirement)
 CREATE TABLE IF NOT EXISTS public.assessment_results (
@@ -43,13 +47,21 @@ CREATE TABLE IF NOT EXISTS public.assessment_results (
 -- RLS for assessment_results
 ALTER TABLE public.assessment_results ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Vendors can do all on own assessment results" ON public.assessment_results;
 CREATE POLICY "Vendors can do all on own assessment results"
   ON public.assessment_results
   FOR ALL
   USING (
     EXISTS (
-      SELECT 1 FROM public.assessments a 
-      WHERE a.id = assessment_results.assessment_id 
+      SELECT 1 FROM public.assessments a
+      WHERE a.id = assessment_results.assessment_id
+      AND a.vendor_id = auth.uid()
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.assessments a
+      WHERE a.id = assessment_results.assessment_id
       AND a.vendor_id = auth.uid()
     )
   );
@@ -63,7 +75,22 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS on_assessment_update ON public.assessments;
 CREATE TRIGGER on_assessment_update
   BEFORE UPDATE ON public.assessments
   FOR EACH ROW
   EXECUTE PROCEDURE public.handle_assessment_updated_at();
+
+CREATE INDEX IF NOT EXISTS assessments_vendor_id_created_at_idx
+  ON public.assessments (vendor_id, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS assessments_procurement_id_idx
+  ON public.assessments (procurement_id);
+
+CREATE INDEX IF NOT EXISTS assessments_product_id_idx
+  ON public.assessments (product_id);
+
+CREATE INDEX IF NOT EXISTS assessment_results_assessment_id_idx
+  ON public.assessment_results (assessment_id);
+
+NOTIFY pgrst, 'reload schema';

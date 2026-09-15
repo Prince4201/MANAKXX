@@ -218,13 +218,26 @@ function RootComponent() {
       else if (path.startsWith("/vendor") && user.role !== "Vendor/Supplier") {
         deny("You are not a Vendor/Supplier.");
       }
-      // Officer routes (dashboard, analysis, officer/*)
       else if (
-        (path.startsWith("/dashboard") || path.startsWith("/analysis") || path.startsWith("/officer")) &&
+        (path.startsWith("/dashboard") || (path.startsWith("/officer") && !path.startsWith("/officer/evaluation"))) &&
         !["Government Procurement Officer", "Admin"].includes(user.role)
       ) {
         deny("You do not have Procurement Officer privileges.");
       }
+      else if (
+        path.startsWith("/officer/evaluation") &&
+        !["Government Procurement Officer", "Admin", "Technical Reviewer"].includes(user.role)
+      ) {
+        deny("You do not have permission to view final evaluations.");
+      }
+      // Analysis routes (accessible by Officer, Admin, and Reviewer)
+      else if (
+        path.startsWith("/analysis") &&
+        !["Government Procurement Officer", "Admin", "Technical Reviewer"].includes(user.role)
+      ) {
+        deny("You do not have permission to view analysis workspaces.");
+      }
+
     }
   }, [user, loading, location.pathname, navigate]);
 

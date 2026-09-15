@@ -79,10 +79,10 @@ function OfficerProcurements() {
                   <TableCell className="text-right">
                     <Button asChild variant="ghost" size="sm" className="h-8 text-xs">
                       <Link to="/analysis/$id" params={{ id: a.id }}>
-                        {a.status === "Draft" ? "Continue" : "Open"}
+                        {a.status === "DRAFT" ? "Continue" : "Open"}
                       </Link>
                     </Button>
-                    {(a.status === "Completed" || a.status === "Approved") && (
+                    {(a.status === "UNDER_REVIEW" || a.status === "APPROVED" || a.status === "PUBLISHED") && (
                       <Button asChild variant="outline" size="sm" className="ml-2 h-8 text-xs">
                         <Link to="/analysis/$id/report" params={{ id: a.id }}>Report</Link>
                       </Button>

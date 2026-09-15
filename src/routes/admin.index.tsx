@@ -145,7 +145,9 @@ function AdminPage() {
       </div>
 
       {/* Admin Tools */}
-      <SectionTitle title="Administration Tools" className="mt-8" />
+      <div className="mt-8">
+        <SectionTitle title="Administration Tools" />
+      </div>
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
         <ToolCard to="/admin/users" icon={Users} title="User Management" body="Approve officers, create reviewers, manage vendors." />
         <ToolCard to="/admin/standards" icon={Database} title="Standards Database" body="Add, edit or deactivate standards." />

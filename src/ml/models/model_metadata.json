@@ -1,0 +1,33 @@
+{
+  "model": "RandomForestClassifier",
+  "dataset": "synthetic-v1",
+  "samples": 3500,
+  "features": [
+    "technical_match_ratio",
+    "technical_partial_ratio",
+    "technical_missing_ratio",
+    "mandatory_requirement_compliance",
+    "document_completeness",
+    "required_documents_present",
+    "required_documents_missing",
+    "evidence_coverage",
+    "specification_match_score",
+    "specification_conflict_count",
+    "experience_years",
+    "relevant_experience_score",
+    "delivery_days",
+    "delivery_compliance",
+    "quoted_price",
+    "price_score",
+    "standards_coverage",
+    "high_risk_requirement_count",
+    "missing_evidence_count",
+    "conflict_count"
+  ],
+  "metrics": {
+    "accuracy": 0.9171428571428571,
+    "precision": 0.9158737502031944,
+    "recall": 0.9171428571428571,
+    "f1": 0.9160192795814338
+  }
+}

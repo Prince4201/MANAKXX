@@ -1,6 +1,5 @@
 import { useSyncExternalStore } from "react";
-import { DEFAULT_WEIGHTS, detectConflicts, detectGaps, extractRequirements, recommend, uid } from "./engine";
-import { SCENARIOS } from "./scenarios";
+import { DEFAULT_WEIGHTS, detectConflicts, detectGaps, recommend } from "./engine";
 import { STANDARDS } from "./standards";
 import type {
   Analysis,
@@ -29,80 +28,11 @@ export const BASELINE = {
 };
 
 function seedState(): AppState {
-  const analyses: Analysis[] = [];
-  const reviews: Review[] = [];
-  const feedback: Feedback[] = [];
-  const officers = ["A. Sharma", "R. Iyer", "M. Khan", "P. Deshmukh"];
-  const reviewers = ["S. Nair", "V. Rao", "K. Banerjee"];
-
-  SCENARIOS.forEach((sc, i) => {
-    const seedRuns = i < 3 ? 2 : 1;
-    for (let k = 0; k < seedRuns; k++) {
-      const requirements = extractRequirements(sc.text, sc.product);
-      const recommendations = recommend(requirements, sc.category, sc.product, DEFAULT_WEIGHTS, STANDARDS);
-      const idx = analyses.length;
-      const created = new Date(2026, 2 + (idx % 6), 3 + ((idx * 5) % 24), 10, 15);
-      const status = (["Completed", "Needs Review", "Approved", "Draft"] as const)[idx % 4]!;
-      const analysis: Analysis = {
-        id: `ANL-2026-${String(1001 + idx)}`,
-        tenderTitle: k === 0 ? sc.tenderTitle : `${sc.tenderTitle} (Phase II)`,
-        reference: k === 0 ? sc.reference : `${sc.reference}-B`,
-        category: sc.category,
-        product: sc.product,
-        inputMethod: "Demo",
-        sourceName: `${sc.name} demo tender`,
-        specText: sc.text,
-        requirements,
-        recommendations,
-        gaps: detectGaps(requirements),
-        conflicts: detectConflicts(sc.text, requirements),
-        status,
-        createdAt: created.toISOString(),
-        createdBy: officers[idx % officers.length]!,
-      };
-      analyses.push(analysis);
-
-      const top = recommendations.slice(0, k === 0 ? 2 : 1);
-      top.forEach((rec, j) => {
-        const decision = (["Approved", "Approved", "Review Requested", "Rejected"] as const)[
-          (idx + j) % 4
-        ]!;
-        reviews.push({
-          id: uid("rev"),
-          analysisId: analysis.id,
-          standardId: rec.standardId,
-          aiScore: rec.relevance,
-          reviewer: reviewers[(idx + j) % reviewers.length]!,
-          decision,
-          comment:
-            decision === "Approved"
-              ? "Matches the identified product domain and the stated safety/performance requirements."
-              : decision === "Rejected"
-                ? "Scope of this synthetic standard is broader than the procurement item."
-                : "Requires a second opinion from the technical committee.",
-          updatedAt: new Date(created.getTime() + 86400000).toISOString(),
-        });
-        if (j === 0) {
-          feedback.push({
-            id: uid("fb"),
-            analysisId: analysis.id,
-            standardId: rec.standardId,
-            kind: decision === "Rejected" ? "Partially correct" : "Correct recommendation",
-            comment: "Recorded during prototype evaluation.",
-            createdAt: new Date(created.getTime() + 90000000).toISOString(),
-          });
-        }
-      });
-    }
-  });
-
-  analyses.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
-
   return {
     user: null,
-    analyses,
-    reviews,
-    feedback,
+    analyses: [],
+    reviews: [],
+    feedback: [],
     standards: STANDARDS,
     weights: DEFAULT_WEIGHTS,
     theme: "light",

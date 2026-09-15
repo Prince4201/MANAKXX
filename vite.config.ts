@@ -23,7 +23,7 @@ export default defineConfig(({ command, mode }) => {
               define: { "process.env.NODE_ENV": JSON.stringify("development") },
             },
           },
-          esbuild: { keepNames: true },
+          esbuild: { keepNames: true } as import('vite').ESBuildOptions,
         }
       : {}),
     resolve: {

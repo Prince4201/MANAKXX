@@ -210,6 +210,8 @@ export function useOfficerStats() {
 export type VendorStats = {
   availableProcurements: number;
   productsCount: number;
+  assessmentsStarted: number;
+  assessmentsCompleted: number;
 };
 
 export function useVendorStats() {
@@ -222,15 +224,19 @@ export function useVendorStats() {
     const { data: { user } } = await supabase.auth.getUser();
 
     // Vendors can see analyses that are "Approved" or "Completed"
-    const [approvedCount, completedCount, productsCount] = await Promise.all([
+    const [approvedCount, completedCount, productsCount, assessmentsStarted, assessmentsCompleted] = await Promise.all([
       countRows("analyses", { status: "Approved" }),
       countRows("analyses", { status: "Completed" }),
       user ? countRows("products", { vendor_id: user.id }) : 0,
+      user ? countRows("assessments", { vendor_id: user.id }) : 0,
+      user ? countRows("assessments", { vendor_id: user.id, status: "COMPLETED" }) : 0,
     ]);
 
     setStats({
       availableProcurements: approvedCount + completedCount,
-      productsCount: productsCount,
+      productsCount,
+      assessmentsStarted,
+      assessmentsCompleted,
     });
     setLoading(false);
   }, []);

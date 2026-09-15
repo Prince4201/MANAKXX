@@ -36,6 +36,15 @@ export function DisclaimerBar({ className }: { className?: string }) {
 
 export function StatusBadge({ status }: { status: string }) {
   const map: Record<string, string> = {
+    // New uppercase lifecycle statuses
+    DRAFT: "bg-muted text-muted-foreground border-border",
+    UNDER_REVIEW: "bg-warning/20 text-warning-foreground border-warning/40",
+    CHANGES_REQUESTED: "bg-amber-500/15 text-amber-700 border-amber-500/30",
+    APPROVED: "bg-success/15 text-success border-success/30",
+    PUBLISHED: "bg-info/15 text-info border-info/30",
+    CLOSED: "bg-muted text-muted-foreground border-border",
+    SUBMITTED: "bg-info/15 text-info border-info/30",
+    // Legacy/display statuses (kept for backward compat)
     Completed: "bg-info/15 text-info border-info/30",
     Approved: "bg-success/15 text-success border-success/30",
     "Needs Review": "bg-warning/20 text-warning-foreground border-warning/40",
@@ -43,6 +52,7 @@ export function StatusBadge({ status }: { status: string }) {
     Rejected: "bg-destructive/15 text-destructive border-destructive/30",
     "Review Requested": "bg-warning/20 text-warning-foreground border-warning/40",
     Pending: "bg-muted text-muted-foreground border-border",
+    Open: "bg-success/15 text-success border-success/30",
     "Active — Demo": "bg-success/15 text-success border-success/30",
     "Deprecated — Demo": "bg-destructive/15 text-destructive border-destructive/30",
     "Draft — Demo": "bg-muted text-muted-foreground border-border",
@@ -54,6 +64,9 @@ export function StatusBadge({ status }: { status: string }) {
     "No Match": "bg-muted text-muted-foreground border-border",
     "Highly Relevant": "bg-success/15 text-success border-success/30",
     Relevant: "bg-info/15 text-info border-info/30",
+    "Highly Recommended": "bg-success/15 text-success border-success/30",
+    "Recommended with caveats": "bg-warning/20 text-warning-foreground border-warning/40",
+    Recommended: "bg-info/15 text-info border-info/30",
   };
   return (
     <span

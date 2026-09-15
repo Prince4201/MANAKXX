@@ -96,7 +96,7 @@ export interface Conflict {
   recommendation: string;
 }
 
-export type AnalysisStatus = "Draft" | "Completed" | "Needs Review" | "Approved";
+export type AnalysisStatus = "DRAFT" | "UNDER_REVIEW" | "CHANGES_REQUESTED" | "APPROVED" | "PUBLISHED" | "CLOSED";
 
 export interface Analysis {
   id: string;
@@ -112,6 +112,8 @@ export interface Analysis {
   gaps: Gap[];
   conflicts: Conflict[];
   status: AnalysisStatus;
+  required_documents?: RequiredDocument[];
+  evaluation_weights?: EvaluationWeights;
   createdAt: string;
   createdBy: string;
 }
@@ -296,4 +298,59 @@ export interface MLAssessmentResponse {
   gaps: any[];
   warnings: any[];
   recommendations?: any[];
+  metadata?: {
+    model_version?: string;
+    explanation?: string;
+    predicted_class?: number;
+  };
+}
+
+// ------------------------------------------------------------------
+// FINAL EVALUATION & APPLICATION TYPES
+// ------------------------------------------------------------------
+
+export interface RequiredDocument {
+  type: string;
+  name: string;
+  required: boolean;
+}
+
+export interface EvaluationWeights {
+  technical: number;
+  documentation: number;
+  experience: number;
+  delivery: number;
+  price: number;
+}
+
+export type TenderApplicationStatus = "DRAFT" | "SUBMITTED" | "UNDER_REVIEW" | "SHORTLISTED" | "NOT_SHORTLISTED" | "WITHDRAWN";
+
+export interface TenderApplication {
+  id: string;
+  tender_id: string;
+  vendor_id: string;
+  product_id: string;
+  status: TenderApplicationStatus;
+  submitted_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface VendorEvaluation {
+  id: string;
+  application_id: string;
+  tender_id: string;
+  vendor_id: string;
+  model_version?: string;
+  technical_score?: number;
+  documentation_score?: number;
+  experience_score?: number;
+  delivery_score?: number;
+  price_score?: number;
+  overall_score?: number;
+  confidence?: number;
+  risk_level?: string;
+  rank?: number;
+  recommendation?: string;
+  evaluation_timestamp: string;
 }
