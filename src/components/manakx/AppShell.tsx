@@ -255,8 +255,8 @@ function getQuickAction(role?: Role): QuickAction | null {
 export function Logo({ compact }: { compact?: boolean }) {
   return (
     <div className="group flex items-center gap-3">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-gradient-to-br from-indigo-500 via-blue-500 to-cyan-400 text-white shadow-lg shadow-blue-500/25 ring-1 ring-inset ring-white/20 transition-transform duration-300 group-hover:scale-105">
-        <span className="font-display text-[15px] font-black tracking-tighter">MX</span>
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-[12px] shadow-lg shadow-blue-500/25 ring-1 ring-inset ring-white/20 transition-transform duration-300 group-hover:scale-105">
+        <img src="/favicon.jpg" alt="MANAKX Logo" className="h-full w-full object-cover" />
       </div>
       {!compact && (
         <div className="flex flex-col justify-center leading-none">
