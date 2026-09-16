@@ -1,11 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Briefcase, ClipboardCheck, FileText, Loader2, Package, Search, Upload } from "lucide-react";
+import { Briefcase, ClipboardCheck, FileText, Loader2, Package, Search, Upload, Award, CheckCircle2 } from "lucide-react";
 import { AppShell } from "@/components/manakx/AppShell";
 import { KpiCard } from "@/components/manakx/bits";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useVendorStats } from "@/lib/manakx/use-realtime";
 import { useStore } from "@/lib/manakx/store";
+import { supabase } from "@/lib/supabase";
+import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/vendor/")({
   head: () => ({
@@ -17,6 +19,30 @@ export const Route = createFileRoute("/vendor/")({
 function VendorDashboard() {
   const { user, analyses } = useStore();
   const { stats, loading } = useVendorStats();
+  const [awardedTenders, setAwardedTenders] = useState<{ tenderName: string; awardedAt: string }[]>([]);
+
+  useEffect(() => {
+    if (!user || !supabase) return;
+    async function checkAwards() {
+      const { data } = await supabase!
+        .from("tender_applications")
+        .select("tender_id, updated_at")
+        .eq("vendor_id", user!.id)
+        .eq("status", "AWARDED");
+        
+      if (data && data.length > 0) {
+        const awards = data.map(d => {
+          const tender = analyses.find(a => a.id === d.tender_id);
+          return {
+            tenderName: tender?.tenderTitle || d.tender_id,
+            awardedAt: d.updated_at ? new Date(d.updated_at).toLocaleString() : "Recently",
+          };
+        });
+        setAwardedTenders(awards);
+      }
+    }
+    checkAwards();
+  }, [user, analyses]);
 
   // Vendor sees approved procurements as "available" for self-assessment
   // Kept here for the preview grid below (we fetch live stats for the KPI card)
@@ -45,6 +71,31 @@ function VendorDashboard() {
         </Button>
       }
     >
+      {/* Award Notification Banner */}
+      {awardedTenders.length > 0 && awardedTenders.map((award, i) => (
+        <div key={i} className="mb-6 rounded-xl border-2 border-green-500/50 bg-gradient-to-r from-green-500/10 via-green-500/5 to-transparent p-6 shadow-lg animate-in fade-in slide-in-from-top-2 duration-500">
+          <div className="flex items-start gap-4">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-green-500/20 text-green-600 dark:text-green-400 shrink-0">
+              <Award className="h-7 w-7" />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-3 flex-wrap">
+                <h2 className="text-xl font-bold text-green-700 dark:text-green-400">🎉 Congratulations! Application Approved</h2>
+                <span className="inline-flex items-center rounded-full bg-green-500/20 px-3 py-1 text-xs font-semibold text-green-700 dark:text-green-400 border border-green-500/30">
+                  <CheckCircle2 className="mr-1 h-3 w-3" /> TENDER AWARDED
+                </span>
+              </div>
+              <p className="mt-2 text-base text-foreground">
+                You got this tender! Your application for <strong className="text-green-700 dark:text-green-400">{award.tenderName}</strong> has been officially approved and awarded to your company.
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Awarded on: {award.awardedAt} · A procurement officer will contact you shortly with the final contract documents.
+              </p>
+            </div>
+          </div>
+        </div>
+      ))}
+
       {/* KPI Row */}
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard label="Available Assessments" value={stats?.availableProcurements ?? 0} sub="Open for self-assessment" icon={Briefcase} />

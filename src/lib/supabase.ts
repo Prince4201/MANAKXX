@@ -8,3 +8,8 @@ export const hasSupabaseConfig = Boolean(supabaseUrl && supabaseAnonKey);
 export const supabase = hasSupabaseConfig
   ? createClient(supabaseUrl!, supabaseAnonKey!)
   : null;
+
+const supabaseServiceKey = import.meta.env['VITE_SUPABASE_SERVICE_ROLE_KEY'] as string | undefined;
+export const supabaseAdmin = supabaseUrl && supabaseServiceKey
+  ? createClient(supabaseUrl, supabaseServiceKey)
+  : supabase;

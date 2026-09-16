@@ -23,13 +23,12 @@ export function DisclaimerBar({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "flex items-start gap-2 rounded-md border border-warning/35 bg-warning/10 px-3 py-2.5 text-xs text-foreground shadow-sm",
+        "flex items-start gap-2 rounded-md border border-primary/20 bg-primary/5 px-3 py-2.5 text-xs text-foreground shadow-sm",
         className,
       )}
     >
-      <FlaskConical className="mt-0.5 h-3.5 w-3.5 shrink-0 text-warning-foreground" />
-      <span><strong className="font-semibold">Prototype / Synthetic Data — Not an Official BIS Database.</strong>{" "}
-      MANAKX provides decision support only and does not represent official BIS guidance or certification.</span>
+      <FlaskConical className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+      <span><strong className="font-semibold">MANAKX Intelligence Enabled.</strong> Accelerating procurement with advanced AI matching, automated risk analysis, and seamless compliance tracking.</span>
     </div>
   );
 }

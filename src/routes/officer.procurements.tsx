@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { FolderOpen, PlusCircle } from "lucide-react";
+import { FolderOpen, PlusCircle, Users } from "lucide-react";
 import { AppShell } from "@/components/manakx/AppShell";
 import { StatusBadge } from "@/components/manakx/bits";
 import { Button } from "@/components/ui/button";
@@ -55,7 +55,6 @@ function OfficerProcurements() {
                 <TableHead>Procurement ID</TableHead>
                 <TableHead>Title</TableHead>
                 <TableHead>Category</TableHead>
-                <TableHead>Quantity (Est)</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Requirements</TableHead>
                 <TableHead>Created</TableHead>
@@ -68,7 +67,6 @@ function OfficerProcurements() {
                   <TableCell className="font-mono text-xs font-medium">{a.id}</TableCell>
                   <TableCell className="max-w-[200px] truncate font-medium" title={a.tenderTitle}>{a.tenderTitle}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">{a.category}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">—</TableCell>
                   <TableCell>
                     <StatusBadge status={a.status} />
                   </TableCell>
@@ -76,15 +74,22 @@ function OfficerProcurements() {
                   <TableCell className="text-xs text-muted-foreground">
                     {new Date(a.createdAt).toLocaleDateString()}
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right space-x-2">
                     <Button asChild variant="ghost" size="sm" className="h-8 text-xs">
                       <Link to="/analysis/$id" params={{ id: a.id }}>
                         {a.status === "DRAFT" ? "Continue" : "Open"}
                       </Link>
                     </Button>
                     {(a.status === "UNDER_REVIEW" || a.status === "APPROVED" || a.status === "PUBLISHED") && (
-                      <Button asChild variant="outline" size="sm" className="ml-2 h-8 text-xs">
+                      <Button asChild variant="outline" size="sm" className="h-8 text-xs">
                         <Link to="/analysis/$id/report" params={{ id: a.id }}>Report</Link>
+                      </Button>
+                    )}
+                    {(a.status === "PUBLISHED" || a.status === "APPROVED") && (
+                      <Button asChild variant="default" size="sm" className="h-8 text-xs">
+                        <Link to="/officer/vendors" search={{ tenderId: a.id }}>
+                          <Users className="mr-1 h-3 w-3" /> Vendors
+                        </Link>
                       </Button>
                     )}
                   </TableCell>

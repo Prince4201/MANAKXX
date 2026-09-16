@@ -110,7 +110,7 @@ function LoginPage() {
           </p>
         </div>
         <p className="relative text-xs text-sidebar-foreground/60">
-          Prototype / Synthetic Data — Not an Official BIS Database
+          MANAKX: Advanced AI Procurement Intelligence
         </p>
       </div>
 

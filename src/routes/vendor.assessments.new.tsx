@@ -380,26 +380,26 @@ function AssessmentWizard() {
             </Card>
             <Card>
               <CardContent className="p-4 flex flex-col items-center justify-center">
-                <span className="text-2xl font-bold text-blue-600">{results.requirement_results.filter(r => r.status === "PARTIAL").length}</span>
+                <span className="text-2xl font-bold text-blue-600">{(results.requirement_results || []).filter(r => r.status === "PARTIAL").length}</span>
                 <span className="text-sm font-medium text-muted-foreground">Partial</span>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4 flex flex-col items-center justify-center">
-                <span className="text-2xl font-bold text-amber-600">{results.warnings.length}</span>
+                <span className="text-2xl font-bold text-amber-600">{(results.warnings || []).length}</span>
                 <span className="text-sm font-medium text-muted-foreground">Warnings</span>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4 flex flex-col items-center justify-center">
-                <span className="text-2xl font-bold text-destructive">{results.gaps.length}</span>
+                <span className="text-2xl font-bold text-destructive">{(results.gaps || []).length}</span>
                 <span className="text-sm font-medium text-muted-foreground">Missing/Gaps</span>
               </CardContent>
             </Card>
           </div>
 
           {/* Gaps / Action Items */}
-          {results.gaps.length > 0 && (
+          {(results.gaps || []).length > 0 && (
             <Card className="border-destructive/20 bg-destructive/5">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center text-destructive">
@@ -408,10 +408,10 @@ function AssessmentWizard() {
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3">
-                  {results.gaps.map((gap, i) => (
+                  {(results.gaps || []).map((gap: any, i: number) => (
                     <li key={i} className="flex flex-col sm:flex-row sm:items-center justify-between bg-background p-3 rounded border">
-                      <span className="font-medium text-sm">{gap.requirement}</span>
-                      <Badge variant="destructive" className="mt-2 sm:mt-0 w-fit">{gap.issue}</Badge>
+                      <span className="font-medium text-sm">{gap.requirement || gap}</span>
+                      <Badge variant="destructive" className="mt-2 sm:mt-0 w-fit">{gap.issue || 'Requires Attention'}</Badge>
                     </li>
                   ))}
                 </ul>
@@ -434,52 +434,76 @@ function AssessmentWizard() {
             </Card>
           )}
 
-          {/* Detailed Requirement Results */}
+          {/* Detailed Requirement Results (Needs Improvement) */}
           <Card>
             <CardHeader>
-              <CardTitle>Detailed Findings</CardTitle>
-              <CardDescription>Requirement-by-requirement traceability to source evidence.</CardDescription>
+              <CardTitle>Areas for Improvement</CardTitle>
+              <CardDescription>Requirements that did not fully match and require your attention.</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
-                {results.requirement_results.map((r, i) => {
-                  const req = requirements.find(req => req.id === r.requirement_id);
-                  const isMatch = r.status === "MATCH";
-                  const isPartial = r.status === "PARTIAL";
-                  const isWarning = r.status === "WARNING";
-                  const isMissing = r.status === "MISSING";
-
+              {(() => {
+                const needsImprovement = (results.requirement_results || []).filter(r => r.status !== "MATCH");
+                
+                if (needsImprovement.length === 0) {
                   return (
-                    <div key={i} className="border rounded-lg p-4 bg-background">
-                      <div className="flex items-start justify-between gap-4 mb-3">
-                        <div className="font-medium text-sm leading-relaxed">{req?.text || r.requirement_id}</div>
-                        <Badge variant={isMatch ? "default" : isPartial ? "secondary" : isWarning ? "outline" : "destructive"}
-                          className={isMatch ? "bg-emerald-500" : isPartial ? "text-blue-600 border-blue-200" : isWarning ? "text-amber-600 border-amber-200" : ""}>
-                          {r.status}
-                        </Badge>
-                      </div>
-
-                      <div className="grid gap-3 text-sm md:grid-cols-2 mt-4 pt-4 border-t border-dashed">
-                        <div>
-                          <span className="text-muted-foreground block text-xs mb-1 uppercase tracking-wider">AI Analysis</span>
-                          <span className={isMissing ? "text-destructive" : ""}>{r.explanation}</span>
-                        </div>
-                        <div>
-                          <span className="text-muted-foreground block text-xs mb-1 uppercase tracking-wider">Source Evidence</span>
-                          {r.evidence ? (
-                            <span className="flex items-center gap-1.5 font-medium text-primary">
-                              <FileText className="h-3.5 w-3.5" />
-                              {r.evidence}
-                            </span>
-                          ) : (
-                            <span className="text-muted-foreground italic">No evidence found</span>
-                          )}
-                        </div>
-                      </div>
+                    <div className="text-center p-8 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-emerald-700 dark:text-emerald-400">
+                      <CheckCircle2 className="h-10 w-10 mx-auto mb-3 text-emerald-500" />
+                      <h3 className="text-lg font-semibold">Perfect Match!</h3>
+                      <p className="mt-1 text-sm">Your product specifications meet all requirements perfectly. There are no areas requiring improvement.</p>
                     </div>
                   );
-                })}
-              </div>
+                }
+
+                return (
+                  <div className="space-y-6">
+                    {needsImprovement.map((r, i) => {
+                      const req = requirements.find(req => req.id === r.requirement_id);
+                      const isMatch = r.status === "MATCH";
+                      const isPartial = r.status === "PARTIAL";
+                      const isWarning = r.status === "WARNING";
+                      const isMissing = r.status === "MISSING";
+
+                      return (
+                        <div key={i} className={`border rounded-lg p-4 bg-background ${isMissing ? 'border-destructive/50 shadow-[0_0_10px_rgba(239,68,68,0.1)]' : ''}`}>
+                          <div className="flex items-start justify-between gap-4 mb-3">
+                            <div className={`font-medium text-sm leading-relaxed ${isMissing ? 'text-destructive font-semibold' : ''}`}>
+                              {isMissing && <AlertTriangle className="inline-block mr-2 h-4 w-4 text-destructive mb-0.5" />}
+                              {req?.text || r.requirement_id}
+                            </div>
+                            <Badge variant={isMatch ? "default" : isPartial ? "secondary" : isWarning ? "outline" : "destructive"}
+                              className={isMatch ? "bg-emerald-500" : isPartial ? "text-blue-600 border-blue-200" : isWarning ? "text-amber-600 border-amber-200" : ""}>
+                              {r.status}
+                            </Badge>
+                          </div>
+
+                          <div className="grid gap-3 text-sm md:grid-cols-2 mt-4 pt-4 border-t border-dashed">
+                            <div>
+                              <span className="text-muted-foreground block text-xs mb-1 uppercase tracking-wider">AI Analysis</span>
+                              <span className={isMissing ? "text-destructive font-medium" : ""}>{r.explanation}</span>
+                              {isMissing && (
+                                <div className="mt-2 text-xs font-medium text-destructive bg-destructive/10 inline-block px-2 py-1 rounded">
+                                  Action Required: Update product specifications or upload supporting datasheet
+                                </div>
+                              )}
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground block text-xs mb-1 uppercase tracking-wider">Source Evidence</span>
+                              {r.evidence ? (
+                                <span className="flex items-center gap-1.5 font-medium text-primary">
+                                  <FileText className="h-3.5 w-3.5" />
+                                  {r.evidence}
+                                </span>
+                              ) : (
+                                <span className="text-muted-foreground italic">No evidence found</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
             </CardContent>
           </Card>
 

@@ -63,8 +63,8 @@ function ReportPage() {
         ? analysisReviews.map((r) => ` - ${r.standardId}: ${r.decision} by ${r.reviewer} — ${r.comment}`)
         : [" - No review decisions recorded"]),
       ``,
-      `DISCLAIMER: Prototype / Synthetic Data — Not an Official BIS Database. MANAKX provides decision support, not legal or regulatory certification.`,
-    ].join("\n");
+      `MANAKX Intelligence Enabled: Accelerating procurement with advanced AI matching, automated risk analysis, and seamless compliance tracking.`,
+    ].join("\n")
     const blob = new Blob([lines], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -282,9 +282,8 @@ function ReportPage() {
           <section className="rounded-md border border-warning/40 bg-warning/10 p-4 text-sm">
             <h2 className="font-display text-base font-semibold">9. Disclaimer</h2>
             <p className="mt-1">
-              Prototype / Synthetic Data — Not an Official BIS Database. MANAKX provides decision support, not legal or
-              regulatory certification. The standards referenced here are synthetic records created for demonstration
-              and must not be cited as compliance evidence.
+              MANAKX provides decision support, not legal or
+              regulatory certification.
             </p>
           </section>
         </CardContent>

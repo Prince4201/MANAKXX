@@ -4,11 +4,12 @@ import { toast } from "sonner";
 import { AppShell } from "@/components/manakx/AppShell";
 import { EmptyState, ScoreRing, StatusBadge } from "@/components/manakx/bits";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useTenderApplications } from "@/lib/manakx/use-applications";
 import { useStore } from "@/lib/manakx/store";
-import { supabase } from "@/lib/supabase";
+import { supabase, supabaseAdmin } from "@/lib/supabase";
+import { useState, useEffect } from "react";
 
 export const Route = createFileRoute("/officer/evaluation")({
   validateSearch: (search: Record<string, unknown>): { tenderId?: string } =>
@@ -20,12 +21,57 @@ function OfficerEvaluation() {
   const { tenderId } = Route.useSearch();
   const { analyses, user } = useStore();
   const tender = analyses.find((a) => a.id === tenderId);
-  const { applications, evaluations, loading } = useTenderApplications(tenderId ?? "");
+  const { applications, evaluations, loading, reload } = useTenderApplications(tenderId ?? "");
+  
+  const [vendorMap, setVendorMap] = useState<Record<string, any>>({});
+
+  useEffect(() => {
+    if (!supabase || applications.length === 0) return;
+    async function fetchVendors() {
+      const vendorIds = [...new Set(applications.map(a => a.vendor_id))];
+      const { data: profiles } = await (supabaseAdmin || supabase)!
+        .from("profiles")
+        .select("id, name, company_name, email")
+        .in("id", vendorIds);
+      
+      const vMap: Record<string, any> = {};
+      (profiles || []).forEach((p: any) => {
+        vMap[p.id] = { id: p.id, name: p.name || "Unknown Vendor", company: p.company_name || "—", email: p.email || "—" };
+      });
+      setVendorMap(vMap);
+    }
+    fetchVendors();
+  }, [applications]);
 
   if (!tenderId || !tender) {
+    const publishedTenders = analyses.filter(a => a.status === "PUBLISHED" || a.status === "APPROVED");
     return (
-      <AppShell title="Final Evaluation" crumbs={[{ label: "Evaluation" }]}>
-        <EmptyState title="Select a tender" description="Please select a published tender to view evaluations." />
+      <AppShell title="Final Evaluation" description="Select a tender to view evaluations and award." crumbs={[{ label: "Tender Award" }]}>
+        {publishedTenders.length === 0 ? (
+          <EmptyState title="No published tenders" description="Publish a tender first to start receiving vendor applications." />
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {publishedTenders.map(t => (
+              <a key={t.id} href={`/officer/evaluation?tenderId=${t.id}`}>
+                <Card className="cursor-pointer transition-all hover:border-primary hover:shadow-md">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base">{t.tenderTitle}</CardTitle>
+                    <CardDescription className="font-mono text-xs">{t.id}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between">
+                      <StatusBadge status={t.status} />
+                      <span className="text-xs text-muted-foreground">{t.requirements.length} requirements</span>
+                    </div>
+                    <div className="mt-3 flex items-center gap-1 text-sm font-medium text-primary">
+                      View Award <Award className="h-3.5 w-3.5" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </a>
+            ))}
+          </div>
+        )}
       </AppShell>
     );
   }
@@ -63,7 +109,10 @@ function OfficerEvaluation() {
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
-          {shortlist.map((ev, idx) => (
+          {shortlist.map((ev, idx) => {
+            const vendorInfo = vendorMap[ev.vendor_id];
+            const vendorName = vendorInfo ? (vendorInfo.company || vendorInfo.name) : `Vendor ${ev.vendor_id.substring(0,8)}`;
+            return (
             <Card key={ev.id} className={idx === 0 ? "border-primary ring-1 ring-primary" : ""}>
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
@@ -71,7 +120,7 @@ function OfficerEvaluation() {
                     <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
                       {ev.rank}
                     </span>
-                    <CardTitle className="text-base font-mono">Vendor {ev.vendor_id.substring(0,8)}</CardTitle>
+                    <CardTitle className="text-base font-mono">{vendorName}</CardTitle>
                   </div>
                   <StatusBadge status={ev.recommendation || "Recommended"} />
                 </div>
@@ -103,8 +152,60 @@ function OfficerEvaluation() {
                   </div>
                 </div>
               </CardContent>
+              {(() => {
+                const app = applications.find(a => a.id === ev.application_id);
+                const isAwarded = app?.status === "AWARDED";
+                const alreadyAwarded = applications.some(a => a.status === "AWARDED");
+                
+                if (isAwarded) {
+                  return (
+                    <div className="bg-green-500/15 p-4 flex items-center justify-center border-t border-green-500/30 text-green-700 dark:text-green-400 font-semibold gap-2">
+                      <CheckCircle2 className="h-5 w-5" /> Tender Awarded — Winner
+                    </div>
+                  );
+                }
+                
+                if (!alreadyAwarded && app) {
+                  return (
+                    <div className="p-4 pt-2">
+                      <Button 
+                        className="w-full bg-green-600 hover:bg-green-700 text-white"
+                        onClick={async () => {
+                          if (!confirm(`Award this tender to "${vendorName}"? This action cannot be undone.`)) return;
+                          toast.info("Awarding tender...");
+                          // Mark this application as AWARDED
+                          const { error } = await supabase!.from("tender_applications").update({ status: "AWARDED" }).eq("id", app.id);
+                          if (error) {
+                            toast.error("Failed to award tender", { description: error.message });
+                            return;
+                          }
+                          // Mark all other applications for this tender as NOT_SHORTLISTED
+                          const otherAppIds = applications.filter(a => a.id !== app.id).map(a => a.id);
+                          if (otherAppIds.length > 0) {
+                            await supabase!.from("tender_applications").update({ status: "NOT_SHORTLISTED" }).in("id", otherAppIds);
+                          }
+                          toast.success("Tender Awarded!", { description: `${vendorName} has been awarded this tender.` });
+                          setTimeout(() => { reload(); }, 800);
+                        }}
+                      >
+                        <Award className="mr-2 h-4 w-4" /> Award Tender to {vendorName}
+                      </Button>
+                    </div>
+                  );
+                }
+
+                if (alreadyAwarded && !isAwarded) {
+                  return (
+                    <div className="bg-muted/50 p-3 flex items-center justify-center border-t text-muted-foreground text-sm">
+                      Not selected for this tender
+                    </div>
+                  );
+                }
+                return null;
+              })()}
             </Card>
-          ))}
+          );
+        })}
         </div>
       )}
       
@@ -121,14 +222,18 @@ function OfficerEvaluation() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {evaluations.slice(topN).map((ev) => (
+              {evaluations.slice(topN).map((ev) => {
+                const vendorInfo = vendorMap[ev.vendor_id];
+                const vendorName = vendorInfo ? (vendorInfo.company || vendorInfo.name) : `Vendor ${ev.vendor_id.substring(0,8)}`;
+                return (
                 <TableRow key={ev.id}>
                   <TableCell>{ev.rank}</TableCell>
-                  <TableCell className="font-mono text-xs">{ev.vendor_id}</TableCell>
+                  <TableCell className="font-mono text-xs">{vendorName}</TableCell>
                   <TableCell>{ev.overall_score}%</TableCell>
                   <TableCell>{ev.recommendation}</TableCell>
                 </TableRow>
-              ))}
+                );
+              })}
             </TableBody>
           </Table>
         </>
@@ -164,15 +269,23 @@ function OfficerEvaluation() {
         </div>
       )}
 
-      {applications[0]?.status === "SHORTLISTED" && (
+      {applications.some(a => a.status === "AWARDED") ? (
+        <div className="mt-8 rounded-md bg-primary/10 p-4 border border-primary/20 flex items-center gap-3 text-primary">
+          <Award className="h-6 w-6" />
+          <div>
+            <h4 className="font-semibold">Tender Awarded</h4>
+            <p className="text-sm">The procurement authority has finalized the award for this tender.</p>
+          </div>
+        </div>
+      ) : applications[0]?.status === "SHORTLISTED" ? (
         <div className="mt-8 rounded-md bg-green-50 p-4 border border-green-200 dark:bg-green-900/20 dark:border-green-800 flex items-center gap-3 text-green-800 dark:text-green-300">
           <CheckCircle2 className="h-6 w-6" />
           <div>
             <h4 className="font-semibold">Reviewer Status: APPROVED</h4>
-            <p className="text-sm">The technical reviewer has verified the AI evidence and approved this shortlist.</p>
+            <p className="text-sm">The technical reviewer has verified the AI evidence and approved this shortlist. Waiting for final award decision.</p>
           </div>
         </div>
-      )}
+      ) : null}
     </AppShell>
   );
 }

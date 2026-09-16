@@ -328,7 +328,7 @@ export interface EvaluationWeights {
   price: number;
 }
 
-export type TenderApplicationStatus = "DRAFT" | "SUBMITTED" | "UNDER_REVIEW" | "SHORTLISTED" | "NOT_SHORTLISTED" | "WITHDRAWN";
+export type TenderApplicationStatus = "DRAFT" | "SUBMITTED" | "UNDER_REVIEW" | "SHORTLISTED" | "NOT_SHORTLISTED" | "WITHDRAWN" | "AWARDED";
 
 export interface TenderApplication {
   id: string;

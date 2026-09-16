@@ -77,9 +77,15 @@ function VendorHistory() {
                         <div className="text-xs text-muted-foreground">{app.tender_id}</div>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                          <Calendar className="h-4 w-4" />
-                          {new Date(app.submitted_at).toLocaleDateString()}
+                        <div className="flex flex-col text-muted-foreground text-sm">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4" />
+                            {new Date(app.submitted_at).toLocaleDateString()}
+                          </div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Clock className="h-4 w-4" />
+                            {new Date(app.submitted_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell>

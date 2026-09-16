@@ -11,6 +11,7 @@ import { useStore } from "@/lib/manakx/store";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/officer/inspection")({
   head: () => ({ meta: [{ title: "Product Inspection — MANAKX" }] }),
@@ -27,8 +28,9 @@ function OfficerInspection() {
   const approved = analyses.filter((a) => a.status === "PUBLISHED" || a.status === "AWARDED" || a.status === "COMPLETED");
 
   // Mock demo scan function
-  const handleDemoScan = () => {
+  const handleDemoScan = (e?: React.ChangeEvent<HTMLInputElement>) => {
     setIsScanning(true);
+    toast.info("Analyzing image with ML model...");
     setTimeout(() => {
       setIsScanning(false);
       setScannedData({
@@ -39,6 +41,13 @@ function OfficerInspection() {
       });
       setStep(3);
     }, 2000);
+  };
+
+  const handleSaveReport = () => {
+    toast.success("Inspection Report Saved", { description: "The results have been securely logged to the vendor's record." });
+    setStep(1);
+    setSelectedAnalysis("");
+    setScannedData(null);
   };
 
   return (
@@ -127,7 +136,7 @@ function OfficerInspection() {
                         <p className="mb-6 max-w-sm text-sm text-muted-foreground">
                           Scan the manufacturer's QR code or standard compliance barcode to automatically extract specifications.
                         </p>
-                        <Button onClick={handleDemoScan}>
+                        <Button onClick={() => handleDemoScan()}>
                           <Camera className="mr-2 h-4 w-4" /> Open Camera Scanner
                         </Button>
                         <p className="mt-4 text-[10px] text-muted-foreground uppercase tracking-widest">(Hackathon Prototype Trigger)</p>
@@ -139,11 +148,23 @@ function OfficerInspection() {
                 <TabsContent value="photo">
                    <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
                       <UploadCloud className="mb-4 h-12 w-12 text-muted-foreground" />
-                      <h3 className="mb-2 font-semibold">Upload Product Certificate</h3>
+                      <h3 className="mb-2 font-semibold">Upload Product Image</h3>
                       <p className="mb-6 max-w-sm text-sm text-muted-foreground">
                         Upload a photo of the product data sheet, test report, or physical dimensions. AI will extract the values.
                       </p>
-                      <Button variant="outline">Browse Files</Button>
+                      <Label htmlFor="officer-photo-upload" className="cursor-pointer">
+                        <div className={`flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground ${isScanning ? 'opacity-50 pointer-events-none' : ''}`}>
+                          {isScanning ? "Processing..." : "Browse Files"}
+                        </div>
+                        <input
+                          id="officer-photo-upload"
+                          type="file"
+                          className="hidden"
+                          accept="image/*"
+                          onChange={handleDemoScan}
+                          disabled={isScanning}
+                        />
+                      </Label>
                    </div>
                 </TabsContent>
 
@@ -257,9 +278,9 @@ function OfficerInspection() {
               </CardContent>
             </Card>
             
-            <div className="flex justify-between">
+            <div className="flex justify-between mt-6">
               <Button variant="outline" onClick={() => setStep(2)}>Scan Another Product</Button>
-              <Button>Save Inspection Report</Button>
+              <Button onClick={handleSaveReport}>Save Inspection Report</Button>
             </div>
           </div>
         )}

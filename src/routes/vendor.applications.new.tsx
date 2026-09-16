@@ -61,13 +61,13 @@ function VendorApplicationWizard() {
     if (!supabase || !user) return;
     setLoading(true);
     try {
-      const { data, error } = await supabase.from("tender_applications").insert({
+      const { data, error } = await supabase.from("tender_applications").upsert({
         tender_id: tender.id,
         vendor_id: user.id,
         product_id: selectedProduct,
         status: "SUBMITTED",
         submitted_at: new Date().toISOString()
-      }).select().single();
+      }, { onConflict: 'tender_id,vendor_id,product_id' }).select().single();
 
       if (error) throw error;
       

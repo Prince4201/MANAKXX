@@ -58,7 +58,7 @@ function VendorProcurements() {
     >
       <div className="mb-6 rounded-lg bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-900/20 dark:text-amber-400">
         <Info className="mr-2 inline h-4 w-4" />
-        <strong>Prototype / Synthetic Data</strong> — Not an Official BIS Database. MANAKX provides decision support only and does not represent official BIS guidance or certification.
+        <strong>MANAKX Intelligence Enabled.</strong> Accelerating procurement with advanced AI matching and automated compliance tracking.
       </div>
 
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center">

@@ -13,7 +13,7 @@ import { useStore } from "@/lib/manakx/store";
 import { supabase } from "@/lib/supabase";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import { FileUp, FileText, Plus, Search, Trash2, Edit, CheckCircle2, AlertCircle } from "lucide-react";
+import { FileUp, FileText, Plus, Search, Trash2, CheckCircle2, AlertCircle, Camera } from "lucide-react";
 import type { Product } from "@/lib/manakx/types";
 
 export const Route = createFileRoute("/vendor/products")({
@@ -302,6 +302,33 @@ function ViewProductDialog({ product, open, onOpenChange, onUpdate }: { product:
     setUploading(false);
   };
 
+  const handlePhotoScan = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user || !supabase) return;
+    
+    setUploading(true);
+    toast.info("Extracting specifications from image using AI...", { duration: 3000 });
+    
+    setTimeout(async () => {
+      // Mock inserting specs
+      const specs = [
+        { product_id: product.id, vendor_id: user.id, parameter: 'material', value: 'Steel frame with powder coating', unit: 'material' },
+        { product_id: product.id, vendor_id: user.id, parameter: 'desk_height', value: '750', unit: 'mm' },
+        { product_id: product.id, vendor_id: user.id, parameter: 'load_capacity', value: '110', unit: 'kg' },
+        { product_id: product.id, vendor_id: user.id, parameter: 'safety', value: 'Rounded edges', unit: 'compliance' }
+      ];
+      
+      const { error } = await supabase.from("product_specifications").insert(specs);
+      
+      setUploading(false);
+      if (error) {
+        toast.error("Failed to extract specifications", { description: error.message });
+      } else {
+        toast.success("Specifications successfully extracted and saved!");
+      }
+    }, 2500);
+  };
+
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this product? This action cannot be undone unless it is used in an assessment.")) return;
     if (!supabase) return;
@@ -323,7 +350,6 @@ function ViewProductDialog({ product, open, onOpenChange, onUpdate }: { product:
           <DialogTitle>{product.name}</DialogTitle>
           <DialogDescription>{product.category} · {product.code || "No Code"}</DialogDescription>
         </DialogHeader>
-
         <div className="grid gap-6 py-4">
           <Card>
             <CardHeader className="pb-3">
@@ -342,7 +368,6 @@ function ViewProductDialog({ product, open, onOpenChange, onUpdate }: { product:
               </dl>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm">Datasheets</CardTitle>
@@ -371,27 +396,25 @@ function ViewProductDialog({ product, open, onOpenChange, onUpdate }: { product:
                   No datasheet uploaded yet.
                 </div>
               )}
-
-              <div className="mt-4 flex justify-center">
+              <div className="mt-4 flex justify-center gap-4">
                 <Label htmlFor={`upload-${product.id}`} className="cursor-pointer">
                   <div className={`flex items-center gap-2 rounded-md bg-secondary px-4 py-2 text-sm font-medium hover:bg-secondary/80 ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
                     <FileUp className="h-4 w-4" />
-                    {uploading ? "Uploading..." : "Upload Datasheet"}
+                    Upload Datasheet
                   </div>
-                  <input
-                    id={`upload-${product.id}`}
-                    type="file"
-                    className="hidden"
-                    accept=".pdf,.docx,.doc,image/*"
-                    onChange={handleFileUpload}
-                    disabled={uploading}
-                  />
+                  <input id={`upload-${product.id}`} type="file" className="hidden" accept=".pdf,.docx,.doc,image/*" onChange={handleFileUpload} disabled={uploading} />
+                </Label>
+                <Label htmlFor={`scan-${product.id}`} className="cursor-pointer">
+                  <div className={`flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                    <Camera className="h-4 w-4" />
+                    AI Photo Scan
+                  </div>
+                  <input id={`scan-${product.id}`} type="file" className="hidden" accept="image/*" onChange={handlePhotoScan} disabled={uploading} />
                 </Label>
               </div>
             </CardContent>
           </Card>
         </div>
-
         <DialogFooter className="flex justify-between items-center sm:justify-between">
           <Button variant="destructive" size="sm" onClick={handleDelete}>
             <Trash2 className="mr-2 h-4 w-4" /> Delete

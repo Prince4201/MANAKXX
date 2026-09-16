@@ -64,10 +64,38 @@ def extract_features(req: MLAssessmentRequest) -> pd.DataFrame:
     req_results = []
     
     for r in req.requirements:
-        # Mock logic to simulate finding a match in product specs
-        spec_match = any(r.get('type', '').lower() in s.get('parameter', s.get('attribute_name', '')).lower() or
-                         r.get('text', '').lower() in s.get('value', s.get('attribute_value', '')).lower() 
-                         for s in req.product_specifications)
+        # Smart keyword matching: tokenize and compare with synonyms
+        req_type = r.get('type', '').lower()
+        req_text = r.get('text', '').lower()
+        req_tokens = set(req_type.split() + req_text.replace(',', ' ').replace('.', ' ').split())
+        
+        # Domain synonym expansion for common procurement terms
+        synonyms = {
+            'dimension': ['height', 'width', 'length', 'size', 'desk_height', 'depth', 'mm', 'cm'],
+            'material': ['steel', 'wood', 'metal', 'plastic', 'iron', 'aluminum', 'frame', 'powder', 'coating'],
+            'safety': ['edge', 'round', 'rounded', 'protection', 'safe', 'guard', 'compliance', 'edges'],
+            'load': ['capacity', 'weight', 'bearing', 'load_capacity', 'kg', 'strength'],
+            'durability': ['strength', 'load', 'capacity', 'resistant', 'heavy', 'duty'],
+            'weight': ['kg', 'load', 'capacity', 'mass'],
+            'finish': ['coating', 'powder', 'paint', 'surface', 'polish'],
+            'standard': ['bis', 'iso', 'is', 'certification', 'compliance'],
+        }
+        expanded_tokens = set(req_tokens)
+        for key, syns in synonyms.items():
+            if key in req_tokens or any(s in req_tokens for s in syns):
+                expanded_tokens.update(syns)
+                expanded_tokens.add(key)
+        
+        spec_match = False
+        for s in req.product_specifications:
+            spec_param = s.get('parameter', s.get('attribute_name', '')).lower()
+            spec_val = s.get('value', s.get('attribute_value', '')).lower()
+            spec_tokens = set(spec_param.replace('_', ' ').split() + spec_val.replace(',', ' ').replace('.', ' ').split())
+            
+            overlap = expanded_tokens & spec_tokens
+            if len(overlap) >= 1:
+                spec_match = True
+                break
         
         if spec_match:
             matched_reqs += 1
@@ -150,10 +178,20 @@ def evaluate_vendor(request: MLAssessmentRequest):
     overall_score = max(0, min(100, overall_score))
     
     gaps = []
-    if critical_gaps > 0:
-        gaps.append(f"Critical Gap: Missing {critical_gaps} mandatory requirements.")
+    # Build structured gap objects matching the frontend's expected shape: { requirement, issue }
+    for rr in req_results:
+        if rr["status"] == "MISSING":
+            # Find the original requirement text
+            orig_req = next((r for r in request.requirements if r.get("id") == rr["requirement_id"]), None)
+            req_text = orig_req.get("text", rr["requirement_id"]) if orig_req else rr["requirement_id"]
+            gaps.append({"requirement": req_text, "issue": "Missing mandatory requirement"})
+        elif rr["status"] == "PARTIAL":
+            orig_req = next((r for r in request.requirements if r.get("id") == rr["requirement_id"]), None)
+            req_text = orig_req.get("text", rr["requirement_id"]) if orig_req else rr["requirement_id"]
+            gaps.append({"requirement": req_text, "issue": "Partially met"})
+    
     if df_features['document_completeness_ratio'][0] < 1.0:
-        gaps.append("Incomplete documentation provided.")
+        gaps.append({"requirement": "Documentation Completeness", "issue": f"Only {int(df_features['document_completeness_ratio'][0]*100)}% of expected documents provided"})
         
     explanation = f"Model classified this application as {prediction}. "
     explanation += f"It matched {df_features['requirement_match_ratio'][0]*100:.0f}% of requirements."
@@ -171,7 +209,12 @@ def evaluate_vendor(request: MLAssessmentRequest):
         "gaps": gaps,
         "warnings": [],
         "recommendations": ["Review missing mandatory requirements."] if critical_gaps > 0 else ["Application looks strong."],
-        "explanation": explanation
+        "explanation": explanation,
+        "metadata": {
+            "model_version": metadata.get("model_version", "1.0"),
+            "explanation": explanation,
+            "predicted_class": prediction
+        }
     }
 
 @app.get("/api/ml/metadata")

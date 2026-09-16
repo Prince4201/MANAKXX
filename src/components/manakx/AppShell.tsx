@@ -25,6 +25,7 @@ import {
   User,
   UserCog,
   Users,
+  Award,
   Zap,
   type LucideIcon,
 } from "lucide-react";
@@ -75,6 +76,13 @@ const OFFICER_NAV: NavSection[] = [
       { to: "/history", label: "Analysis History", icon: History },
       { to: "/standards", label: "Standards Search", icon: Search },
       { to: "/compare", label: "Compare Standards", icon: GitCompare },
+    ],
+  },
+  {
+    section: "Vendor Management",
+    items: [
+      { to: "/officer/vendors", label: "Vendor Applications", icon: Users },
+      { to: "/officer/evaluation", label: "Tender Award", icon: Award },
     ],
   },
   {
