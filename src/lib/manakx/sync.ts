@@ -221,7 +221,7 @@ export async function pullFromSupabase(): Promise<Partial<AppState> | null> {
         confidence: r.confidence,
         sourceSentence: r.source_sentence,
       })) || [],
-      recommendations: [], // Recommendations are recomputed client-side from requirements + standards
+      recommendations: [], // We'll compute this in a second pass once standards are ready
       gaps: gapsData?.filter((g: any) => g.analysis_id === a.id).map((g: any) => ({
         id: g.id,
         area: g.area,
@@ -254,6 +254,13 @@ export async function pullFromSupabase(): Promise<Partial<AppState> | null> {
       lastUpdated: s.last_updated,
       synthetic: s.synthetic,
     }));
+
+    // Second pass: compute recommendations dynamically!
+    import("./engine").then(({ recommend, DEFAULT_WEIGHTS }) => {
+      for (const a of analyses) {
+        a.recommendations = recommend(a.requirements, a.category, a.product, DEFAULT_WEIGHTS, standards);
+      }
+    });
 
     const reviews: Review[] = (reviewsData || []).map((r: any) => ({
       id: r.id,

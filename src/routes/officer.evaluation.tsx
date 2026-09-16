@@ -24,11 +24,14 @@ function OfficerEvaluation() {
   const { applications, evaluations, loading, reload } = useTenderApplications(tenderId ?? "");
   
   const [vendorMap, setVendorMap] = useState<Record<string, any>>({});
+  const [photoMap, setPhotoMap] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!supabase || applications.length === 0) return;
-    async function fetchVendors() {
+    async function fetchVendorsAndPhotos() {
       const vendorIds = [...new Set(applications.map(a => a.vendor_id))];
+      const productIds = [...new Set(applications.map(a => a.product_id))];
+      
       const { data: profiles } = await (supabaseAdmin || supabase)!
         .from("profiles")
         .select("id, name, company_name, email")
@@ -39,8 +42,20 @@ function OfficerEvaluation() {
         vMap[p.id] = { id: p.id, name: p.name || "Unknown Vendor", company: p.company_name || "—", email: p.email || "—" };
       });
       setVendorMap(vMap);
+
+      const { data: photos } = await (supabaseAdmin || supabase)!
+        .from("product_documents")
+        .select("product_id, file_url")
+        .eq("file_type", "Photo")
+        .in("product_id", productIds);
+        
+      const pMap: Record<string, string> = {};
+      (photos || []).forEach((p: any) => {
+        pMap[p.product_id] = p.file_url;
+      });
+      setPhotoMap(pMap);
     }
-    fetchVendors();
+    fetchVendorsAndPhotos();
   }, [applications]);
 
   if (!tenderId || !tender) {
@@ -126,6 +141,15 @@ function OfficerEvaluation() {
                 </div>
               </CardHeader>
               <CardContent>
+                {(() => {
+                  const app = applications.find(a => a.id === ev.application_id);
+                  const photoUrl = app ? photoMap[app.product_id] : null;
+                  return photoUrl ? (
+                    <div className="mb-4 aspect-video rounded-md overflow-hidden bg-black/5 flex items-center justify-center">
+                      <img src={photoUrl} alt="Product" className="max-h-full object-contain" />
+                    </div>
+                  ) : null;
+                })()}
                 <div className="mb-4 flex gap-4">
                   <ScoreRing value={ev.overall_score || 0} label="Overall" />
                   <ScoreRing value={ev.confidence || 0} label="Confidence" />
@@ -174,7 +198,7 @@ function OfficerEvaluation() {
                           if (!confirm(`Award this tender to "${vendorName}"? This action cannot be undone.`)) return;
                           toast.info("Awarding tender...");
                           // Mark this application as AWARDED
-                          const { error } = await supabase!.from("tender_applications").update({ status: "AWARDED" }).eq("id", app.id);
+                          const { error } = await (supabaseAdmin || supabase)!.from("tender_applications").update({ status: "AWARDED" }).eq("id", app.id);
                           if (error) {
                             toast.error("Failed to award tender", { description: error.message });
                             return;
@@ -182,7 +206,7 @@ function OfficerEvaluation() {
                           // Mark all other applications for this tender as NOT_SHORTLISTED
                           const otherAppIds = applications.filter(a => a.id !== app.id).map(a => a.id);
                           if (otherAppIds.length > 0) {
-                            await supabase!.from("tender_applications").update({ status: "NOT_SHORTLISTED" }).in("id", otherAppIds);
+                            await (supabaseAdmin || supabase)!.from("tender_applications").update({ status: "NOT_SHORTLISTED" }).in("id", otherAppIds);
                           }
                           toast.success("Tender Awarded!", { description: `${vendorName} has been awarded this tender.` });
                           setTimeout(() => { reload(); }, 800);

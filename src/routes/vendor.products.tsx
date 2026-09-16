@@ -1,17 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { AppShell } from "@/components/manakx/AppShell";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useVendorProducts, useProductDocuments } from "@/lib/manakx/use-products";
 import { useStore } from "@/lib/manakx/store";
 import { supabase } from "@/lib/supabase";
-import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { FileUp, FileText, Plus, Search, Trash2, CheckCircle2, AlertCircle, Camera } from "lucide-react";
 import type { Product } from "@/lib/manakx/types";
@@ -175,6 +176,55 @@ function AddProductDialog({ open, onOpenChange, onSuccess }: { open: boolean; on
     description: "",
   });
 
+  const [cameraActive, setCameraActive] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+      setCameraActive(true);
+    } catch (err) {
+      toast.error("Could not access camera");
+    }
+  };
+
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(t => t.stop());
+      streamRef.current = null;
+    }
+    setCameraActive(false);
+  };
+
+  const capturePhoto = () => {
+    if (!videoRef.current) return;
+    const canvas = document.createElement("canvas");
+    canvas.width = videoRef.current.videoWidth;
+    canvas.height = videoRef.current.videoHeight;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.drawImage(videoRef.current, 0, 0);
+    
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      const file = new File([blob], `product_${Date.now()}.jpg`, { type: "image/jpeg" });
+      setPhotoFile(file);
+      setPhotoPreview(URL.createObjectURL(blob));
+      stopCamera();
+    }, "image/jpeg", 0.9);
+  };
+
+  useEffect(() => {
+    return () => stopCamera();
+  }, [open]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !supabase) return;
@@ -184,7 +234,7 @@ function AddProductDialog({ open, onOpenChange, onSuccess }: { open: boolean; on
     }
 
     setLoading(true);
-    const { error } = await supabase.from("products").insert([
+    const { data: prodData, error } = await supabase.from("products").insert([
       {
         vendor_id: user.id,
         name: formData.name,
@@ -194,18 +244,43 @@ function AddProductDialog({ open, onOpenChange, onSuccess }: { open: boolean; on
         manufacturer: formData.manufacturer,
         model_number: formData.model_number,
         description: formData.description,
-        status: "NEEDS_DOCUMENT", // Default status, expecting a datasheet next
+        status: photoFile ? "READY" : "NEEDS_DOCUMENT", // Default status, expecting a datasheet next
       },
-    ]);
+    ]).select();
+
+    if (error) {
+      setLoading(false);
+      toast.error("Failed to add product", { description: error.message });
+      return;
+    }
+
+    const newProd = prodData?.[0];
+
+    if (newProd && photoFile) {
+      // Upload photo
+      const filePath = `${user.id}/${newProd.id}/${photoFile.name}`;
+      const { error: uploadErr } = await supabase.storage.from("vendor_documents").upload(filePath, photoFile);
+      if (uploadErr) {
+        toast.error("Product added, but photo upload failed");
+      } else {
+        const { data: urlData } = supabase.storage.from("vendor_documents").getPublicUrl(filePath);
+        // Insert document record
+        await supabase.from("product_documents").insert({
+          product_id: newProd.id,
+          vendor_id: user.id,
+          file_name: photoFile.name,
+          file_url: urlData.publicUrl,
+          file_type: "Photo"
+        });
+      }
+    }
 
     setLoading(false);
-    if (error) {
-      toast.error("Failed to add product", { description: error.message });
-    } else {
-      toast.success("Product added successfully");
-      onSuccess();
-      setFormData({ name: "", code: "", category: "", subcategory: "", manufacturer: user?.company_name || "", model_number: "", description: "" });
-    }
+    toast.success("Product added successfully");
+    onSuccess();
+    setFormData({ name: "", code: "", category: "", subcategory: "", manufacturer: user?.company_name || "", model_number: "", description: "" });
+    setPhotoPreview(null);
+    setPhotoFile(null);
   };
 
   return (
@@ -240,6 +315,40 @@ function AddProductDialog({ open, onOpenChange, onSuccess }: { open: boolean; on
             <div className="space-y-2 col-span-2">
               <Label>Description</Label>
               <Input value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
+            </div>
+
+            <div className="space-y-2 col-span-2 pt-2 border-t">
+              <Label>Product Photo</Label>
+              {photoPreview ? (
+                <div className="relative rounded-md overflow-hidden bg-black/5 aspect-video flex items-center justify-center">
+                  <img src={photoPreview} alt="Product preview" className="max-h-full object-contain" />
+                  <Button 
+                    type="button" 
+                    variant="destructive" 
+                    size="sm" 
+                    className="absolute top-2 right-2"
+                    onClick={() => { setPhotoPreview(null); setPhotoFile(null); }}
+                  >
+                    Remove
+                  </Button>
+                </div>
+              ) : cameraActive ? (
+                <div className="relative rounded-md overflow-hidden bg-black aspect-video flex flex-col items-center justify-center">
+                  <video ref={videoRef} autoPlay playsInline muted className="h-full w-full object-cover" />
+                  <div className="absolute bottom-4 flex gap-2">
+                    <Button type="button" variant="secondary" onClick={stopCamera}>Cancel</Button>
+                    <Button type="button" onClick={capturePhoto} className="bg-white text-black hover:bg-neutral-200">
+                      <Camera className="mr-2 h-4 w-4" /> Capture
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex justify-center p-6 border-2 border-dashed rounded-md bg-muted/30">
+                  <Button type="button" variant="outline" onClick={startCamera}>
+                    <Camera className="mr-2 h-4 w-4" /> Open Camera
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
           <DialogFooter>

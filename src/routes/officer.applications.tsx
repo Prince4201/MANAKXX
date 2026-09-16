@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { AppShell } from "@/components/manakx/AppShell";
 import { StatusBadge, EmptyState } from "@/components/manakx/bits";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useTenderApplications } from "@/lib/manakx/use-applications";
 import { useStore } from "@/lib/manakx/store";
@@ -29,9 +29,31 @@ function OfficerApplications() {
   const { applications, evaluations, loading, reload } = useTenderApplications(tenderId ?? "");
 
   if (!tenderId || !tender) {
+    const publishedTenders = analyses.filter(a => a.status === "PUBLISHED" || a.status === "APPROVED");
     return (
-      <AppShell title="Applications" crumbs={[{ label: "Applications" }]}>
-        <EmptyState title="Select a tender" description="Please select a published tender to view applications." />
+      <AppShell title="Vendor Applications" description="Select a tender to view submitted applications and run AI evaluation." crumbs={[{ label: "Applications" }]}>
+        {publishedTenders.length === 0 ? (
+          <EmptyState title="No published tenders" description="Publish a tender first to start receiving vendor applications." />
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {publishedTenders.map(t => (
+              <Link key={t.id} to="/officer/applications" search={{ tenderId: t.id }} className="block">
+                <Card className="cursor-pointer transition-all hover:border-primary hover:shadow-md h-full">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base leading-tight">{t.tenderTitle}</CardTitle>
+                    <CardDescription className="font-mono text-xs mt-1">{t.id}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between">
+                      <StatusBadge status={t.status} />
+                      <span className="text-xs text-muted-foreground">{t.requirements.length} requirements</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        )}
       </AppShell>
     );
   }
