@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useTenderApplications } from "@/lib/manakx/use-applications";
 import { useStore } from "@/lib/manakx/store";
-import { supabase } from "@/lib/supabase";
+import { supabase, supabaseAdmin } from "@/lib/supabase";
 import { runAssessment } from "@/lib/manakx/assessment-engine";
 import type { TenderApplication } from "@/lib/manakx/types";
 
@@ -48,12 +48,12 @@ function OfficerApplications() {
       for (const app of applications) {
         if (app.status !== "SUBMITTED") continue;
 
-        // Fetch vendor product
-        const { data: vp } = await supabase.from("products").select("*").eq("id", app.product_id).single();
-        // Fetch product specifications
-        const { data: pSpecs } = await supabase.from("product_specifications").select("*").eq("product_id", app.product_id);
-        // Fetch documents
-        const { data: pDocs } = await supabase.from("product_documents").select("*").eq("product_id", app.product_id);
+        // Fetch vendor product using admin client to bypass RLS
+        const { data: vp } = await (supabaseAdmin || supabase)!.from("products").select("*").eq("id", app.product_id).single();
+        // Fetch product specifications using admin client
+        const { data: pSpecs } = await (supabaseAdmin || supabase)!.from("product_specifications").select("*").eq("product_id", app.product_id);
+        // Fetch documents using admin client
+        const { data: pDocs } = await (supabaseAdmin || supabase)!.from("product_documents").select("*").eq("product_id", app.product_id);
         
         // Build ML Request
         const mlRequest = {
@@ -89,7 +89,7 @@ function OfficerApplications() {
         const risk = mlResponse.compliance_class === 'NON_COMPLIANT' ? 'High' : (mlResponse.compliance_class === 'PARTIALLY_COMPLIANT' ? 'Medium' : 'Low');
         const rec = mlResponse.explanation || "Evaluated by AI";
         
-        const { error: evalError } = await supabase.from("vendor_evaluations").upsert({
+        const { error: evalError } = await (supabaseAdmin || supabase)!.from("vendor_evaluations").upsert({
           application_id: app.id,
           tender_id: tenderId,
           vendor_id: app.vendor_id,
@@ -106,11 +106,11 @@ function OfficerApplications() {
 
         if (evalError) throw evalError;
         
-        await supabase.from("tender_applications").update({ status: "UNDER_REVIEW" }).eq("id", app.id);
+        await (supabaseAdmin || supabase)!.from("tender_applications").update({ status: "UNDER_REVIEW" }).eq("id", app.id);
       }
 
       // 2. Calculate dynamic ranks
-      const { data: updatedEvals } = await supabase
+      const { data: updatedEvals } = await (supabaseAdmin || supabase)!
         .from("vendor_evaluations")
         .select("*")
         .eq("tender_id", tenderId)
@@ -118,7 +118,7 @@ function OfficerApplications() {
 
       if (updatedEvals) {
         for (let i = 0; i < updatedEvals.length; i++) {
-          await supabase.from("vendor_evaluations").update({ rank: i + 1 }).eq("id", updatedEvals[i].id);
+          await (supabaseAdmin || supabase)!.from("vendor_evaluations").update({ rank: i + 1 }).eq("id", updatedEvals[i].id);
         }
       }
 
@@ -140,18 +140,18 @@ function OfficerApplications() {
       description={`Manage applications for ${tender.tenderTitle}`}
       crumbs={[{ label: "Procurements", to: "/officer/procurements" }, { label: tender.id }]}
       actions={
-        evaluations.length > 0 ? (
+        submittedCount > 0 ? (
+          <Button onClick={runEvaluation} disabled={running}>
+            <PlayCircle className="mr-2 h-4 w-4" /> 
+            {running ? "Evaluating..." : "Run AI Evaluation"}
+          </Button>
+        ) : evaluations.length > 0 ? (
           <Button asChild>
             <Link to="/officer/evaluation" search={{ tenderId }}>
               <CheckCircle2 className="mr-2 h-4 w-4" /> View Final Shortlist
             </Link>
           </Button>
-        ) : (
-          <Button onClick={runEvaluation} disabled={running || submittedCount === 0}>
-            <PlayCircle className="mr-2 h-4 w-4" /> 
-            {running ? "Evaluating..." : "Run AI Evaluation"}
-          </Button>
-        )
+        ) : null
       }
     >
       <Card>

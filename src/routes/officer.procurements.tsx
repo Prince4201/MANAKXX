@@ -87,7 +87,7 @@ function OfficerProcurements() {
                     )}
                     {(a.status === "PUBLISHED" || a.status === "APPROVED") && (
                       <Button asChild variant="default" size="sm" className="h-8 text-xs">
-                        <Link to="/officer/vendors" search={{ tenderId: a.id }}>
+                        <Link to="/officer/applications" search={{ tenderId: a.id }}>
                           <Users className="mr-1 h-3 w-3" /> Vendors
                         </Link>
                       </Button>

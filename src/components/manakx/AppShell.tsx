@@ -81,7 +81,7 @@ const OFFICER_NAV: NavSection[] = [
   {
     section: "Vendor Management",
     items: [
-      { to: "/officer/vendors", label: "Vendor Applications", icon: Users },
+      { to: "/officer/applications", label: "Vendor Applications", icon: Users },
       { to: "/officer/evaluation", label: "Tender Award", icon: Award },
     ],
   },

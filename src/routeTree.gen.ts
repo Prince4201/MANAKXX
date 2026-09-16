@@ -36,7 +36,6 @@ import { Route as OfficerEvaluationRouteImport } from './routes/officer.evaluati
 import { Route as OfficerInspectionRouteImport } from './routes/officer.inspection'
 import { Route as OfficerProcurementsRouteImport } from './routes/officer.procurements'
 import { Route as OfficerProfileRouteImport } from './routes/officer.profile'
-import { Route as OfficerVendorsRouteImport } from './routes/officer.vendors'
 import { Route as ReviewerIndexRouteImport } from './routes/reviewer.index'
 import { Route as ReviewerHistoryRouteImport } from './routes/reviewer.history'
 import { Route as ReviewerProfileRouteImport } from './routes/reviewer.profile'
@@ -189,11 +188,6 @@ const OfficerProfileRoute = OfficerProfileRouteImport.update({
   path: '/officer/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
-const OfficerVendorsRoute = OfficerVendorsRouteImport.update({
-  id: '/officer/vendors',
-  path: '/officer/vendors',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ReviewerIndexRoute = ReviewerIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -302,7 +296,6 @@ export interface FileRoutesByFullPath {
   '/officer/inspection': typeof OfficerInspectionRoute
   '/officer/procurements': typeof OfficerProcurementsRoute
   '/officer/profile': typeof OfficerProfileRoute
-  '/officer/vendors': typeof OfficerVendorsRoute
   '/reviewer/history': typeof ReviewerHistoryRoute
   '/reviewer/profile': typeof ReviewerProfileRoute
   '/reviewer/queue': typeof ReviewerQueueRoute
@@ -346,7 +339,6 @@ export interface FileRoutesByTo {
   '/officer/inspection': typeof OfficerInspectionRoute
   '/officer/procurements': typeof OfficerProcurementsRoute
   '/officer/profile': typeof OfficerProfileRoute
-  '/officer/vendors': typeof OfficerVendorsRoute
   '/reviewer/history': typeof ReviewerHistoryRoute
   '/reviewer/profile': typeof ReviewerProfileRoute
   '/reviewer/queue': typeof ReviewerQueueRoute
@@ -393,7 +385,6 @@ export interface FileRoutesById {
   '/officer/inspection': typeof OfficerInspectionRoute
   '/officer/procurements': typeof OfficerProcurementsRoute
   '/officer/profile': typeof OfficerProfileRoute
-  '/officer/vendors': typeof OfficerVendorsRoute
   '/reviewer/history': typeof ReviewerHistoryRoute
   '/reviewer/profile': typeof ReviewerProfileRoute
   '/reviewer/queue': typeof ReviewerQueueRoute
@@ -441,7 +432,6 @@ export interface FileRouteTypes {
     | '/officer/inspection'
     | '/officer/procurements'
     | '/officer/profile'
-    | '/officer/vendors'
     | '/reviewer/history'
     | '/reviewer/profile'
     | '/reviewer/queue'
@@ -485,7 +475,6 @@ export interface FileRouteTypes {
     | '/officer/inspection'
     | '/officer/procurements'
     | '/officer/profile'
-    | '/officer/vendors'
     | '/reviewer/history'
     | '/reviewer/profile'
     | '/reviewer/queue'
@@ -531,7 +520,6 @@ export interface FileRouteTypes {
     | '/officer/inspection'
     | '/officer/procurements'
     | '/officer/profile'
-    | '/officer/vendors'
     | '/reviewer/history'
     | '/reviewer/profile'
     | '/reviewer/queue'
@@ -578,7 +566,6 @@ export interface RootRouteChildren {
   OfficerInspectionRoute: typeof OfficerInspectionRoute
   OfficerProcurementsRoute: typeof OfficerProcurementsRoute
   OfficerProfileRoute: typeof OfficerProfileRoute
-  OfficerVendorsRoute: typeof OfficerVendorsRoute
   StandardsIdRoute: typeof StandardsIdRoute
   AdminIndexRoute: typeof AdminIndexRoute
   StandardsIndexRoute: typeof StandardsIndexRoute
@@ -773,13 +760,6 @@ declare module '@tanstack/react-router' {
       path: '/officer/profile'
       fullPath: '/officer/profile'
       preLoaderRoute: typeof OfficerProfileRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/officer/vendors': {
-      id: '/officer/vendors'
-      path: '/officer/vendors'
-      fullPath: '/officer/vendors'
-      preLoaderRoute: typeof OfficerVendorsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reviewer/': {
@@ -981,7 +961,6 @@ const rootRouteChildren: RootRouteChildren = {
   OfficerInspectionRoute: OfficerInspectionRoute,
   OfficerProcurementsRoute: OfficerProcurementsRoute,
   OfficerProfileRoute: OfficerProfileRoute,
-  OfficerVendorsRoute: OfficerVendorsRoute,
   StandardsIdRoute: StandardsIdRoute,
   AdminIndexRoute: AdminIndexRoute,
   StandardsIndexRoute: StandardsIndexRoute,

@@ -318,7 +318,7 @@ function ViewProductDialog({ product, open, onOpenChange, onUpdate }: { product:
         { product_id: product.id, vendor_id: user.id, parameter: 'safety', value: 'Rounded edges', unit: 'compliance' }
       ];
       
-      const { error } = await supabase.from("product_specifications").insert(specs);
+      const { error } = await supabase!.from("product_specifications").insert(specs);
       
       setUploading(false);
       if (error) {
