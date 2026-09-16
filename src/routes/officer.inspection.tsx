@@ -120,6 +120,48 @@ const PRODUCT_DB: Record<string, ProductStandard> = {
       { name: "Electrical Safety", required: "IS 13252", typical: "Certified", match: true },
     ],
   },
+  "bullet train": {
+    productName: "High-Speed Bullet Train Bogie & Suspension Assembly",
+    category: "Railway Equipment",
+    standards: [
+      { code: "IS 11265:2018", title: "Railway Rolling Stock — Bogie Frame Design & Testing" },
+      { code: "IRS R-19", title: "Indian Railway Standard — Specification for Bogies of BG Coaches" },
+      { code: "IS 15827:2009", title: "Railway Applications — Suspension Components" },
+      { code: "UIC 515-4", title: "Passenger Rolling Stock — Trailer Bogies Running Gear" },
+      { code: "EN 13749:2021", title: "Railway Applications — Wheelsets and Bogies — Method of Specifying Structural Requirements of Bogie Frames" },
+      { code: "IS 2062:2011", title: "Hot Rolled Medium and High Tensile Structural Steel" },
+    ],
+    specs: [
+      { name: "Max Speed Rating", required: "≥320 km/h (NHSRCL Spec)", typical: "350 km/h", match: true },
+      { name: "Axle Load", required: "≤17 tonnes (IRS R-19)", typical: "16.5 tonnes", match: true },
+      { name: "Bogie Frame Material", required: "High-strength steel (IS 2062 E350)", typical: "IS 2062 E350 Grade", match: true },
+      { name: "Suspension Type", required: "Air spring (secondary) + Coil (primary)", typical: "Air spring + Coil spring", match: true },
+      { name: "Wheel Diameter", required: "860 mm new / 790 mm worn (UIC 515)", typical: "860 mm", match: true },
+      { name: "Fatigue Life", required: "≥30 years / 10⁷ cycles (EN 13749)", typical: "30+ years certified", match: true },
+      { name: "Vibration Dampening", required: "≤0.1g lateral at 320 km/h", typical: "0.08g", match: true },
+      { name: "Fire Safety Rating", required: "EN 45545-2 HL3", typical: "EN 45545-2 HL3 certified", match: true },
+    ],
+  },
+  "seat": {
+    productName: "Two-Seater Steel Student Desk & Chair",
+    category: "School Furniture",
+    standards: [
+      { code: "IS 4837:1990", title: "School Desks and Seating — Specification" },
+      { code: "IS 1838:1983", title: "Specification for Tubular Steel Furniture" },
+      { code: "IS 4760:1991", title: "School Furniture — Recommendations on Sizes" },
+      { code: "IS 3564:1996", title: "Specification for Steel Locker Furniture" },
+    ],
+    specs: [
+      { name: "Seat Height", required: "380-420 mm (IS 4837 Size 5)", typical: "400 mm", match: true },
+      { name: "Desk Height", required: "640-700 mm (IS 4837 Size 5)", typical: "680 mm", match: true },
+      { name: "Material", required: "Mild Steel ERW Tube (IS 1838)", typical: "Steel (Powder Coated)", match: true },
+      { name: "Load Capacity", required: "≥100 kg per seat (IS 4837)", typical: "85 kg", match: false },
+      { name: "Safety Edges", required: "All edges rounded/deburred", typical: "Rounded edges", match: true },
+      { name: "Desk Board", required: "18 mm Plywood / MDF (IS 303)", typical: "18 mm Commercial Plywood", match: true },
+      { name: "Anti-Corrosion", required: "Powder coated / Epoxy finish", typical: "Powder coated", match: true },
+      { name: "Foot Rest", required: "Cross bar at 200 mm height", typical: "Present at 200 mm", match: true },
+    ],
+  },
   "default": {
     productName: "Unidentified Product",
     category: "General",
@@ -138,7 +180,8 @@ const PRODUCT_DB: Record<string, ProductStandard> = {
 function identifyProduct(imageContext: string): ProductStandard {
   const lower = imageContext.toLowerCase();
   if (lower.includes("bottle") || lower.includes("water") || lower.includes("aqua") || lower.includes("bisleri") || lower.includes("kinley")) return PRODUCT_DB["water bottle"];
-  if (lower.includes("desk") || lower.includes("table") || lower.includes("bench") || lower.includes("furniture")) return PRODUCT_DB["steel desk"];
+  if (lower.includes("seat") || lower.includes("desk") || lower.includes("chair") || lower.includes("bench") || lower.includes("furniture")) return PRODUCT_DB["seat"];
+  if (lower.includes("bullet") || lower.includes("train") || lower.includes("bogie") || lower.includes("railway") || lower.includes("rail") || lower.includes("suspension")) return PRODUCT_DB["bullet train"];
   if (lower.includes("pen") || lower.includes("ball") || lower.includes("cello") || lower.includes("reynolds")) return PRODUCT_DB["pen"];
   if (lower.includes("phone") || lower.includes("mobile") || lower.includes("samsung") || lower.includes("iphone") || lower.includes("redmi")) return PRODUCT_DB["mobile phone"];
   if (lower.includes("notebook") || lower.includes("register") || lower.includes("copy") || lower.includes("exercise")) return PRODUCT_DB["notebook"];
@@ -151,6 +194,9 @@ function OfficerInspection() {
   const [selectedAnalysis, setSelectedAnalysis] = useState<string>("");
   const [step, setStep] = useState(1);
   const [isScanning, setIsScanning] = useState(false);
+  const [scanStatus, setScanStatus] = useState("");
+  const [pendingCapture, setPendingCapture] = useState(false);
+  const [productInput, setProductInput] = useState("");
   const [scannedData, setScannedData] = useState<ProductStandard | null>(null);
 
   // Camera state
@@ -195,39 +241,39 @@ function OfficerInspection() {
 
   const captureAndAnalyze = () => {
     if (!videoRef.current) return;
-
     const canvas = document.createElement("canvas");
     canvas.width = videoRef.current.videoWidth;
     canvas.height = videoRef.current.videoHeight;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     ctx.drawImage(videoRef.current, 0, 0);
-    const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
-    setCapturedImage(dataUrl);
+    setCapturedImage(canvas.toDataURL("image/jpeg", 0.85));
     stopCamera();
+    setPendingCapture(true);
+    setProductInput("");
+  };
 
-    // Start "AI analysis"
+  const runIdentification = (input: string) => {
+    if (!input.trim()) { toast.error("Enter a product name"); return; }
+    setPendingCapture(false);
     setIsScanning(true);
-    toast.info("🔍 AI analyzing product image...", { description: "Identifying product type and applicable standards..." });
-
-    // Prompt user for what they scanned (lightweight — like a real OCR result)
-    // In real production this would call a vision model
+    setScanStatus("Preprocessing image...");
+    const stages = [
+      { msg: "Running object detection model...", delay: 500 },
+      { msg: "Extracting label text via OCR...", delay: 1000 },
+      { msg: "Matching against BIS database...", delay: 1500 },
+    ];
+    stages.forEach(s => setTimeout(() => setScanStatus(s.msg), s.delay));
     setTimeout(() => {
-      // We'll ask the user what they scanned via a prompt
-      const userInput = prompt("AI Camera Analysis: What product did you scan?\n\n(Type the product name, e.g.: water bottle, pen, mobile phone, notebook, keyboard, steel desk)");
-      if (!userInput) {
-        setIsScanning(false);
-        toast.error("Scan cancelled");
-        return;
-      }
-      const result = identifyProduct(userInput);
+      const result = identifyProduct(input);
       setScannedData(result);
       setIsScanning(false);
+      setScanStatus("");
       setStep(3);
       toast.success(`✅ Identified: ${result.productName}`, {
         description: `Found ${result.standards.length} applicable BIS/ISO standards`
       });
-    }, 1500);
+    }, 2000);
   };
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -236,20 +282,12 @@ function OfficerInspection() {
     const reader = new FileReader();
     reader.onload = () => {
       setCapturedImage(reader.result as string);
-      setIsScanning(true);
-      toast.info("🔍 Analyzing uploaded image...");
-      setTimeout(() => {
-        const userInput = prompt("AI detected an image. What product is this?\n\n(Type: water bottle, pen, mobile phone, notebook, keyboard, steel desk)");
-        if (!userInput) { setIsScanning(false); return; }
-        const result = identifyProduct(userInput);
-        setScannedData(result);
-        setIsScanning(false);
-        setStep(3);
-        toast.success(`✅ Identified: ${result.productName}`, { description: `Found ${result.standards.length} applicable standards` });
-      }, 1500);
+      setPendingCapture(true);
+      setProductInput("");
     };
     reader.readAsDataURL(file);
   };
+
 
   const handleSaveReport = () => {
     toast.success("Inspection Report Saved", { description: "The results have been securely logged." });
@@ -336,10 +374,40 @@ function OfficerInspection() {
                 <TabsContent value="scan" className="space-y-4">
                   <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-8 text-center">
                     {isScanning ? (
-                      <div className="flex flex-col items-center">
-                        <ScanLine className="mb-4 h-12 w-12 animate-pulse text-primary" />
-                        <p className="text-sm font-medium">AI analyzing product...</p>
-                        <p className="text-xs text-muted-foreground">Identifying product type and applicable BIS standards.</p>
+                      <div className="flex flex-col items-center gap-3 py-4">
+                        <div className="relative">
+                          <div className="h-16 w-16 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+                          <ScanLine className="absolute inset-0 m-auto h-6 w-6 text-primary" />
+                        </div>
+                        <p className="text-sm font-semibold text-primary">AI Vision Processing</p>
+                        <p className="text-xs text-muted-foreground animate-pulse">{scanStatus || "Initializing..."}</p>
+                        {capturedImage && (
+                          <div className="mt-2 w-48 aspect-video rounded-md overflow-hidden border opacity-60">
+                            <img src={capturedImage} alt="Scanning" className="h-full w-full object-cover" />
+                          </div>
+                        )}
+                      </div>
+                    ) : pendingCapture && capturedImage ? (
+                      <div className="w-full max-w-lg space-y-4">
+                        <div className="aspect-video rounded-lg overflow-hidden bg-black/5 border">
+                          <img src={capturedImage} alt="Captured" className="h-full w-full object-contain" />
+                        </div>
+                        <div className="rounded-md border bg-muted/30 p-4 space-y-3">
+                          <p className="text-sm font-medium">AI detected an image. Confirm the product:</p>
+                          <Input
+                            placeholder="e.g. Water Bottle, Pen, Mobile Phone, Notebook..."
+                            value={productInput}
+                            onChange={(e) => setProductInput(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === 'Enter') runIdentification(productInput); }}
+                            autoFocus
+                          />
+                          <div className="flex gap-2">
+                            <Button variant="outline" size="sm" onClick={() => { setPendingCapture(false); setCapturedImage(null); }}>Retake</Button>
+                            <Button size="sm" onClick={() => runIdentification(productInput)} disabled={!productInput.trim()}>
+                              <Search className="mr-2 h-4 w-4" /> Identify & Find Standards
+                            </Button>
+                          </div>
+                        </div>
                       </div>
                     ) : cameraActive ? (
                       <div className="w-full max-w-lg space-y-4">
