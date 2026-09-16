@@ -13,7 +13,7 @@ import type {
 
 import { pushToSupabase, pullFromSupabase } from "./sync";
 
-const KEY = "manakx.state.v1";
+const KEY = "manakx.state.v2";
 
 // AppState is now defined in types.ts to avoid circular imports
 export type { AppState };
@@ -235,8 +235,8 @@ export const actions = {
         ? s.reviews.map((r) => (r.id === existing.id ? { ...r, ...review, id: existing.id } : r))
         : [review, ...s.reviews];
       const analyses = s.analyses.map((a) =>
-        a.id === review.analysisId && a.status !== "Approved"
-          ? { ...a, status: review.decision === "Approved" ? ("Approved" as const) : ("Needs Review" as const) }
+        a.id === review.analysisId && a.status !== "APPROVED"
+          ? { ...a, status: review.decision === "Approved" ? ("APPROVED" as const) : ("UNDER_REVIEW" as const) }
           : a,
       );
       return { ...s, reviews, analyses };

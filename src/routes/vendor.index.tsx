@@ -20,7 +20,7 @@ function VendorDashboard() {
 
   // Vendor sees approved procurements as "available" for self-assessment
   // Kept here for the preview grid below (we fetch live stats for the KPI card)
-  const availableProcurements = analyses.filter((a) => a.status === "Approved" || a.status === "Completed");
+  const availableProcurements = analyses.filter((a) => a.status === "PUBLISHED" || a.status === "AWARDED" || a.status === "COMPLETED");
 
   if (loading) {
     return (

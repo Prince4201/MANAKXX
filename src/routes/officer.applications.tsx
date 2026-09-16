@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useTenderApplications } from "@/lib/manakx/use-applications";
 import { useStore } from "@/lib/manakx/store";
 import { supabase } from "@/lib/supabase";
+import { runAssessment } from "@/lib/manakx/assessment-engine";
 import type { TenderApplication } from "@/lib/manakx/types";
 
 export const Route = createFileRoute("/officer/applications")({
@@ -41,59 +42,64 @@ function OfficerApplications() {
     toast.info("Running AI Evaluation", { description: "Evaluating all submitted applications..." });
 
     try {
-      // 1. Fetch ML API (Simulated here since this needs the full payload)
-      // In a real scenario, we would loop over applications, fetch product/specs/docs, 
-      // and call VITE_ML_API_URL. For this implementation, we simulate the model response 
-      // scoring to demonstrate the DB interaction and dynamic ranking.
+      // Fetch requirements for this tender
+      const { data: reqs } = await supabase.from("requirements").select("*").eq("analysis_id", tenderId);
 
       for (const app of applications) {
         if (app.status !== "SUBMITTED") continue;
+
+        // Fetch vendor product
+        const { data: vp } = await supabase.from("products").select("*").eq("id", app.product_id).single();
+        // Fetch product specifications
+        const { data: pSpecs } = await supabase.from("product_specifications").select("*").eq("product_id", app.product_id);
+        // Fetch documents
+        const { data: pDocs } = await supabase.from("product_documents").select("*").eq("product_id", app.product_id);
         
-        // Deterministic scores for SIH Demo
-        // In a real scenario, this would call VITE_ML_API_URL
-        let overall = 80; let tech = 85; let doc = 90; let exp = 80; let del = 80; let prc = 80; let risk = "Medium";
-        let rec = "Recommended";
+        // Build ML Request
+        const mlRequest = {
+          procurement: tender,
+          requirements: reqs || [],
+          vendor_product: vp || {},
+          product_specifications: pSpecs || [],
+          documents: pDocs || [],
+          standards: []
+        };
+        
+        // Call the real ML Service
+        const mlResponse = await runAssessment(mlRequest);
+        
+        // Dynamic Weighting Config
+        const weights = tender.evaluation_weights || {
+          technical: 50, documentation: 15, price: 15, delivery: 10, experience: 10
+        };
+        
+        const techScore = mlResponse.overall_score; // Derived from ML
+        const docScore = (mlResponse.feature_scores?.['document_completeness'] || 1.0) * 100;
+        
+        // Example dynamic extraction for commercials
+        const price = 450000; // Mocked from application for now
+        const exp = (mlResponse.feature_scores?.['experience_years'] || 5) * 10;
+        
+        const overall = (techScore * (weights.technical/100)) +
+                        (docScore * (weights.documentation/100)) +
+                        (85 * (weights.price/100)) + 
+                        (90 * (weights.delivery/100)) + 
+                        (exp * (weights.experience/100));
 
-        const { data: profile } = await supabase.from('profiles').select('email').eq('id', app.vendor_id).single();
-        const email = profile?.email || "";
-
-        // ABC School Furniture
-        if (email.includes("abc")) {
-          overall = 95; tech = 98; doc = 100; exp = 90; del = 90; prc = 70; risk = "Low";
-          rec = "Strongly Recommended";
-        }
-        // EduDesk
-        else if (email.includes("edudesk")) {
-          overall = 88; tech = 95; doc = 90; exp = 100; del = 80; prc = 80; risk = "Low";
-          rec = "Strongly Recommended";
-        }
-        // National Classroom (Technical failure)
-        else if (email.includes("national")) {
-          overall = 45; tech = 40; doc = 90; exp = 85; del = 100; prc = 100; risk = "High";
-          rec = "Reject - Fails mandatory technical requirements (Load capacity and height)";
-        }
-        // SmartSchool (Document missing)
-        else if (email.includes("smartschool")) {
-          overall = 82; tech = 95; doc = 50; exp = 80; del = 85; prc = 75; risk = "Medium";
-          rec = "Acceptable - Missing test report, request documentation";
-        }
-        // Prime
-        else if (email.includes("prime")) {
-          overall = 75; tech = 80; doc = 70; exp = 60; del = 80; prc = 85; risk = "Medium";
-          rec = "Recommended with caveats";
-        }
+        const risk = mlResponse.compliance_class === 'NON_COMPLIANT' ? 'High' : (mlResponse.compliance_class === 'PARTIALLY_COMPLIANT' ? 'Medium' : 'Low');
+        const rec = mlResponse.explanation || "Evaluated by AI";
         
         const { error: evalError } = await supabase.from("vendor_evaluations").upsert({
           application_id: app.id,
           tender_id: tenderId,
           vendor_id: app.vendor_id,
-          overall_score: overall,
-          technical_score: tech,
-          documentation_score: doc,
-          experience_score: exp,
-          delivery_score: del,
-          price_score: prc,
-          confidence: 95,
+          overall_score: Math.round(overall),
+          technical_score: Math.round(techScore),
+          documentation_score: Math.round(docScore),
+          experience_score: Math.round(exp),
+          delivery_score: 90,
+          price_score: 85,
+          confidence: mlResponse.confidence,
           risk_level: risk,
           recommendation: rec
         }, { onConflict: "application_id" });

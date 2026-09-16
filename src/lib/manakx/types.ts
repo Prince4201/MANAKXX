@@ -96,7 +96,7 @@ export interface Conflict {
   recommendation: string;
 }
 
-export type AnalysisStatus = "DRAFT" | "UNDER_REVIEW" | "CHANGES_REQUESTED" | "APPROVED" | "PUBLISHED" | "CLOSED";
+export type AnalysisStatus = "DRAFT" | "UNDER_REVIEW" | "CHANGES_REQUESTED" | "APPROVED" | "PUBLISHED" | "AWARDED" | "COMPLETED" | "CLOSED";
 
 export interface Analysis {
   id: string;
@@ -285,6 +285,10 @@ export interface MLAssessmentRequest {
 export interface MLAssessmentResponse {
   overall_score: number;
   confidence: number;
+  compliance_class?: string;
+  feature_scores?: Record<string, number>;
+  explanation?: string;
+  model_version?: string;
   requirement_results: Array<{
     requirement_id: string;
     status: AssessmentResultStatus;
@@ -294,6 +298,7 @@ export interface MLAssessmentResponse {
     evidence?: string;
     explanation?: string;
     source_document_id?: string;
+    severity?: string;
   }>;
   gaps: any[];
   warnings: any[];

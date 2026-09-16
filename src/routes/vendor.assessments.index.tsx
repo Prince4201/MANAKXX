@@ -92,10 +92,10 @@ function VendorAssessmentsHistory() {
                   </TableCell>
                   <TableCell>{getStatusBadge(a.status)}</TableCell>
                   <TableCell>
-                    {a.overall_score !== undefined ? (
+                    {a.overall_score != null ? (
                       <span className="font-semibold">{a.overall_score}%</span>
                     ) : (
-                      "-"
+                      <span className="text-muted-foreground">-</span>
                     )}
                   </TableCell>
                   <TableCell className="text-right">

@@ -9,32 +9,38 @@ export async function runAssessment(
   onProgress?: (stage: string) => void
 ): Promise<MLAssessmentResponse> {
   
-  if (onProgress) onProgress("Initializing AI Demo pipeline...");
+  if (onProgress) onProgress("Initializing ML pipeline...");
   
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 1500));
-  
-  if (onProgress) onProgress("Analyzing specifications and requirements...");
-  await new Promise(resolve => setTimeout(resolve, 1500));
-
-  if (onProgress) onProgress("Scoring vendor compliance...");
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  // Deterministic mock based on the vendor or just returning a generic strong score for the demo self-assessment
-  const isMissingDocs = request.documents?.length === 0;
-  
-  return {
-    overall_score: isMissingDocs ? 72 : 94,
-    confidence: 88,
-    requirement_results: request.requirements.map(req => ({
-      requirement_id: req.id,
-      status: "MATCH",
-      score: 95,
-      evidence: "Matched from product specification sheet",
-      explanation: "The provided product meets this requirement."
-    })),
-    gaps: isMissingDocs ? ["Missing required BIS Test Report"] : [],
-    warnings: isMissingDocs ? ["Documentation is incomplete"] : [],
-    recommendations: ["Ensure all mandatory test reports are updated"]
-  };
+  try {
+    const API_URL = import.meta.env['VITE_ML_API_URL'] || "http://localhost:8000";
+    const ENDPOINT = `${API_URL}/api/ml/vendor-evaluate`;
+    
+    if (onProgress) onProgress("Sending vendor data for ML analysis...");
+    
+    const response = await fetch(ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(request)
+    });
+    
+    if (!response.ok) {
+      let errorDetail = "Evaluation failed.";
+      try {
+        const errorData = await response.json();
+        errorDetail = errorData.detail || errorDetail;
+      } catch (e) {}
+      throw new Error(`ML Service Error: ${response.status} - ${errorDetail}`);
+    }
+    
+    if (onProgress) onProgress("Processing AI prediction...");
+    
+    const data: MLAssessmentResponse = await response.json();
+    return data;
+    
+  } catch (error) {
+    console.error("Failed to run ML assessment:", error);
+    throw error;
+  }
 }

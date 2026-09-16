@@ -1,0 +1,28 @@
+{
+    "model_version": "1.0.0",
+    "algorithm": "RandomForestClassifier",
+    "training_samples": 3200,
+    "test_samples": 800,
+    "features": [
+        "requirement_match_ratio",
+        "mandatory_requirement_match_ratio",
+        "document_completeness_ratio",
+        "evidence_strength",
+        "missing_requirement_count",
+        "critical_gap_count",
+        "price_competitiveness",
+        "experience_years"
+    ],
+    "classes": [
+        "COMPLIANT",
+        "NON_COMPLIANT",
+        "PARTIALLY_COMPLIANT"
+    ],
+    "metrics": {
+        "accuracy": 0.955,
+        "precision": 0.9555,
+        "recall": 0.955,
+        "f1_score": 0.955
+    },
+    "last_trained": "2026-09-16T00:53:21.162431"
+}

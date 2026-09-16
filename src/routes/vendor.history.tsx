@@ -23,7 +23,14 @@ function VendorHistory() {
       if (!supabase || !user) return;
       const { data, error } = await supabase
         .from("tender_applications")
-        .select("*")
+        .select(`
+          *,
+          vendor_evaluations (
+            overall_score,
+            risk_level,
+            recommendation
+          )
+        `)
         .eq("vendor_id", user.id)
         .order("submitted_at", { ascending: false });
       
@@ -36,7 +43,7 @@ function VendorHistory() {
   }, [user]);
 
   return (
-    <AppShell title="My Applications" description="View your submitted tender applications and assessments." crumbs={[{ label: "Vendor", path: "/vendor" }, { label: "My Applications" }]}>
+    <AppShell title="My Applications" description="View your submitted tender applications and officer evaluation status." crumbs={[{ label: "Vendor", path: "/vendor" }, { label: "My Applications" }]}>
       {loading ? (
         <Card className="border-dashed"><CardContent className="p-12 text-center text-muted-foreground">Loading applications...</CardContent></Card>
       ) : applications.length === 0 ? (
@@ -50,21 +57,27 @@ function VendorHistory() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Tender ID</TableHead>
                   <TableHead>Tender Title</TableHead>
                   <TableHead>Submitted Date</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>AI Score</TableHead>
+                  <TableHead>Recommendation</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {applications.map((app) => {
                   const tender = analyses.find(a => a.id === app.tender_id);
+                  // Supabase returns related tables as an array (even for one-to-one sometimes) or object based on foreign key setup
+                  const evalData = Array.isArray(app.vendor_evaluations) ? app.vendor_evaluations[0] : app.vendor_evaluations;
+
                   return (
                     <TableRow key={app.id}>
-                      <TableCell className="font-mono text-xs">{app.tender_id}</TableCell>
-                      <TableCell className="font-medium">{tender?.tenderTitle || "Unknown Tender"}</TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2 text-muted-foreground">
+                        <div className="font-medium text-sm">{tender?.tenderTitle || "Unknown Tender"}</div>
+                        <div className="text-xs text-muted-foreground">{app.tender_id}</div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2 text-muted-foreground text-sm">
                           <Calendar className="h-4 w-4" />
                           {new Date(app.submitted_at).toLocaleDateString()}
                         </div>
@@ -74,6 +87,27 @@ function VendorHistory() {
                           {app.status === 'SUBMITTED' ? <Clock className="h-4 w-4 text-amber-500" /> : <CheckCircle2 className="h-4 w-4 text-emerald-500" />}
                           <span className="font-semibold text-xs uppercase tracking-wider">{app.status}</span>
                         </div>
+                      </TableCell>
+                      <TableCell>
+                        {evalData ? (
+                          <div className="flex flex-col">
+                            <span className="font-bold text-lg">{evalData.overall_score}%</span>
+                            <span className={`text-xs ${evalData.risk_level === 'High' ? 'text-destructive' : evalData.risk_level === 'Medium' ? 'text-amber-500' : 'text-emerald-500'}`}>
+                              {evalData.risk_level} Risk
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground text-sm italic">Pending Review</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {evalData ? (
+                          <div className="max-w-[250px] text-sm line-clamp-2" title={evalData.recommendation}>
+                            {evalData.recommendation}
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground text-sm">-</span>
+                        )}
                       </TableCell>
                     </TableRow>
                   );

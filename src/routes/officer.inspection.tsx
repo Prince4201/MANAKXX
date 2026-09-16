@@ -24,7 +24,7 @@ function OfficerInspection() {
   const [isScanning, setIsScanning] = useState(false);
   const [scannedData, setScannedData] = useState<any>(null);
 
-  const approved = analyses.filter((a) => a.status === "Approved" || a.status === "Completed");
+  const approved = analyses.filter((a) => a.status === "PUBLISHED" || a.status === "AWARDED" || a.status === "COMPLETED");
 
   // Mock demo scan function
   const handleDemoScan = () => {

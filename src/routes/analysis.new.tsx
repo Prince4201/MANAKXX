@@ -142,7 +142,7 @@ function NewAnalysis() {
       recommendations,
       gaps: detectGaps(requirements),
       conflicts: detectConflicts(specText, requirements),
-      status: "Draft",
+      status: "DRAFT",
       createdAt: new Date().toISOString(),
       createdBy: user?.name ?? "Demo Officer",
     };
